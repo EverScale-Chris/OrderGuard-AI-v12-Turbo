@@ -40,7 +40,27 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(data => {
       if (data.error) {
-        showToast(data.error, 'danger');
+        let errorMsg = data.error;
+        if (errorMsg.includes("Required column")) {
+          errorMsg = "Error: Your Excel file is missing required columns. Please ensure your file has columns named exactly 'Model Number' and 'Correct Base Price'.";
+        }
+        showToast(errorMsg, 'danger');
+        
+        // Display a more detailed error message
+        const container = document.getElementById('pricebook-list-container');
+        if (errorMsg.includes("Missing required columns")) {
+          container.innerHTML = `
+            <div class="alert alert-warning">
+              <h5><i class="fas fa-exclamation-triangle"></i> Excel File Format Error</h5>
+              <p>Your Excel file must have these exact column headers:</p>
+              <ul>
+                <li><strong>"Model Number"</strong> - The product model/SKU</li>
+                <li><strong>"Correct Base Price"</strong> - The price in numeric format</li>
+              </ul>
+              <p>Please check your file and try again.</p>
+            </div>
+          `;
+        }
       } else {
         showToast(data.message, 'success');
         form.reset();

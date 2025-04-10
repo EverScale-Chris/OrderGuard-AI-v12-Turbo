@@ -5,13 +5,36 @@ import logging
 from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import tempfile
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
 
-from utils.db_helper import get_all_price_books, add_price_book, get_price_book_data
-from utils.excel_parser import parse_excel_file
-from utils.pdf_parser import extract_data_from_pdf
+# Define base model class
+class Base(DeclarativeBase):
+    pass
 
+# Initialize SQLAlchemy with the Base class
+db = SQLAlchemy(model_class=Base)
+
+# Create the Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default-secret-key-for-development")
+
+# Configure database
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+db.init_app(app)
+
+# Import models after initializing db to avoid circular imports
+with app.app_context():
+    from models import PriceBook, PriceItem, ProcessedPO, POLineItem
+    db.create_all()
+
+# Import Excel parser and PDF parser
+from utils.excel_parser import parse_excel_file
+from utils.pdf_parser import extract_data_from_pdf
 
 # Configure temporary file storage
 UPLOAD_FOLDER = tempfile.gettempdir()

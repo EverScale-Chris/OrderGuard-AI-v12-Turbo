@@ -20,15 +20,77 @@
                     <div class="mb-3">
                         <label for="pricebook-file" class="form-label">Excel File (.xlsx)</label>
                         <input type="file" class="form-control" id="pricebook-file" accept=".xlsx" required>
-                        <div class="form-text">File must contain "Model Number" and "Correct Base Price" columns</div>
+                        <div class="form-text">
+                            <strong>Important:</strong> Excel file must contain exactly these column headers:
+                            <ul class="mt-1 mb-0">
+                                <li>"Model Number" - The product model/SKU</li>
+                                <li>"Correct Base Price" - The price in numeric format</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="d-grid">
+                    <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary" id="upload-btn">
                             <span class="spinner-border spinner-border-sm d-none" id="upload-spinner" role="status" aria-hidden="true"></span>
                             Upload Price Book
                         </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="show-sample-btn">
+                            <i class="fas fa-question-circle"></i> How to format your Excel file
+                        </button>
                     </div>
                 </form>
+            </div>
+        </div>
+        
+        <!-- Sample Excel Format Modal -->
+        <div class="modal fade" id="excelFormatModal" tabindex="-1" aria-labelledby="excelFormatModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="excelFormatModalLabel">Excel File Format Guide</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Your Excel file must have the following structure:</p>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Model Number</th>
+                                        <th>Correct Base Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>ABC123</td>
+                                        <td>299.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>XYZ456</td>
+                                        <td>149.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PROD789</td>
+                                        <td>199.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Important:</h6>
+                            <ul>
+                                <li>Column headers must match <strong>exactly</strong> as shown above</li>
+                                <li>Model Number is the product SKU/identifier</li>
+                                <li>Correct Base Price should be a number (no currency symbols)</li>
+                                <li>Save the file in .xlsx format</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -58,5 +120,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/sample_data.js') }}"></script>
 <script src="{{ url_for('static', filename='js/pricebooks.js') }}"></script>
 {% endblock %}
