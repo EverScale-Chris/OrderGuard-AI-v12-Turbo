@@ -21,8 +21,8 @@ def extract_data_from_pdf(pdf_path):
         
         # Configure Gemini API
         genai.configure(api_key=api_key)
-        # Use Gemini 2.0 flash model
-        model = genai.GenerativeModel('models/gemini-flash')
+        # Use Gemini 1.5 flash model - the currently available model
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # Read the PDF file and encode it as base64
         with open(pdf_path, 'rb') as f:
