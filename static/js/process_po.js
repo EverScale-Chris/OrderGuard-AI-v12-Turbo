@@ -133,7 +133,6 @@ function loadPriceBooksDropdown() {
  */
 function displayResults(data) {
   const container = document.getElementById('results-container');
-  const copyBtn = document.getElementById('copy-btn');
   
   // Create a summary table of the results - now first
   let html = `
@@ -236,16 +235,19 @@ function displayResults(data) {
     </div>
   `;
   
+  // Add the HTML to the container
   container.innerHTML = html;
-  copyBtn.disabled = false;
   
   // Re-initialize the copy button event listener (since we recreated the DOM element)
-  document.getElementById('copy-btn').addEventListener('click', function() {
-    const textarea = document.getElementById('email-report');
-    if (textarea) {
-      textarea.select();
-      document.execCommand('copy');
-      showToast('Email report copied to clipboard', 'success');
-    }
-  });
+  const copyButton = document.getElementById('copy-btn');
+  if (copyButton) {
+    copyButton.addEventListener('click', function() {
+      const textarea = document.getElementById('email-report');
+      if (textarea) {
+        textarea.select();
+        document.execCommand('copy');
+        showToast('Email report copied to clipboard', 'success');
+      }
+    });
+  }
 }
