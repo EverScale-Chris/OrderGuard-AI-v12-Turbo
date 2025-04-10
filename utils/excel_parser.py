@@ -15,8 +15,8 @@ def parse_excel_file(filepath):
         # Read the Excel file
         df = pd.read_excel(filepath)
         
-        # Check if required columns exist - looking for Model Number and Correct Base Price columns
-        required_columns = ["Model Number", "Correct Base Price"]
+        # Check if required columns exist - looking for Item Number and Base Price columns
+        required_columns = ["Item Number", "Base Price"]
         for col in required_columns:
             if col not in df.columns:
                 raise ValueError(f"Required column '{col}' not found in Excel file")
@@ -24,8 +24,8 @@ def parse_excel_file(filepath):
         # Extract model numbers and prices
         price_data = {}
         for _, row in df.iterrows():
-            model_number = str(row["Model Number"]).strip()
-            price = row["Correct Base Price"]
+            model_number = str(row["Item Number"]).strip()
+            price = row["Base Price"]
             
             # Skip rows with empty model numbers
             if not model_number or pd.isna(model_number):
