@@ -1,5 +1,6 @@
 import pandas as pd
 import logging
+import os
 
 def parse_excel_file(filepath):
     """
@@ -12,13 +13,22 @@ def parse_excel_file(filepath):
         dict: Dictionary mapping model numbers to prices
     """
     try:
+        # Log file info
+        logging.debug(f"Parsing Excel file: {filepath}")
+        logging.debug(f"File exists: {os.path.exists(filepath)}")
+        logging.debug(f"File size: {os.path.getsize(filepath)} bytes")
+        
         # Read the Excel file
         df = pd.read_excel(filepath)
+        
+        # Log column names
+        logging.debug(f"Columns found in Excel file: {list(df.columns)}")
         
         # Check if required columns exist - looking for Item Number and Base Price columns
         required_columns = ["Item Number", "Base Price"]
         for col in required_columns:
             if col not in df.columns:
+                logging.error(f"Required column '{col}' not found. Available columns: {list(df.columns)}")
                 raise ValueError(f"Required column '{col}' not found in Excel file")
         
         # Extract model numbers and prices

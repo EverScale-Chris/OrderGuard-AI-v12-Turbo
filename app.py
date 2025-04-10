@@ -2,6 +2,10 @@ import os
 import uuid
 import json
 import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import tempfile
@@ -108,15 +112,36 @@ def upload_price_book():
             
             # Add to database using SQLAlchemy
             pricebook_id = str(uuid.uuid4())
+            logging.debug(f"Generated price book ID: {pricebook_id}")
+            logging.debug(f"Price book name: {pricebook_name}")
+            logging.debug(f"Number of items in price data: {len(price_data)}")
+            
+            # Log a few sample items
+            items_sample = list(price_data.items())[:5] if price_data else []
+            logging.debug(f"Sample items: {items_sample}")
+            
+            # Create new price book
             new_price_book = PriceBook(id=pricebook_id, name=pricebook_name)
+            logging.debug(f"Created price book object: {new_price_book}")
             
             # Add price items
+            item_count = 0
             for model_number, price in price_data.items():
-                new_item = PriceItem(model_number=model_number, price=float(price), price_book_id=pricebook_id)
-                db.session.add(new_item)
+                try:
+                    price_float = float(price)
+                    new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id)
+                    db.session.add(new_item)
+                    item_count += 1
+                except Exception as item_error:
+                    logging.error(f"Error adding item {model_number}: {str(item_error)}")
             
+            logging.debug(f"Added {item_count} price items")
+            
+            # Add price book and commit transaction
             db.session.add(new_price_book)
+            logging.debug("Added price book to session, committing...")
             db.session.commit()
+            logging.debug("Successfully committed to database")
             
             # Clean up the temporary file
             os.remove(filepath)
