@@ -1,34 +1,52 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Process Purchase Order</h1>
-<p class="lead">Upload a customer Purchase Order PDF to verify against your price books.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 style="color: var(--dark-green);"><i class="fas fa-file-invoice"></i> Process Purchase Order</h2>
+        <p class="lead">Upload a customer Purchase Order PDF to verify against your price books.</p>
+    </div>
+    <div class="text-end d-none d-md-block">
+        <div class="badge bg-success p-2 mb-2">AI-Powered Extraction</div>
+        <div class="small text-muted">Using Gemini 1.5 Flash</div>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-lg-5">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-upload"></i> Upload Purchase Order</h5>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-upload me-2" style="color: var(--primary-green);"></i>
+                <h5 class="mb-0">Upload Purchase Order</h5>
             </div>
             <div class="card-body">
                 <form id="process-po-form">
-                    <div class="mb-3">
-                        <label for="pricebook-select" class="form-label">Select Price Book</label>
+                    <div class="mb-4">
+                        <label for="pricebook-select" class="form-label fw-medium">Select Price Book</label>
                         <select class="form-select" id="pricebook-select" required>
                             <option value="" selected disabled>Loading price books...</option>
                         </select>
                         <div class="form-text">Choose the price book to compare against</div>
                     </div>
-                    <div class="mb-3">
-                        <label for="po-file" class="form-label">Purchase Order (PDF)</label>
+                    <div class="mb-4">
+                        <label for="po-file" class="form-label fw-medium">Purchase Order (PDF)</label>
                         <input type="file" class="form-control" id="po-file" accept=".pdf" required>
                         <div class="form-text">Upload the customer's Purchase Order in PDF format</div>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary" id="process-btn">
                             <span class="spinner-border spinner-border-sm d-none" id="process-spinner" role="status" aria-hidden="true"></span>
-                            Process Purchase Order
+                            <i class="fas fa-cogs me-2"></i> Process Purchase Order
                         </button>
+                    </div>
+                    
+                    <div class="mt-4 p-3" style="background-color: var(--highlight-green); border-radius: 8px;">
+                        <h6 style="color: var(--dark-green);"><i class="fas fa-magic"></i> How AI Helps</h6>
+                        <ul class="mb-0 small">
+                            <li>Extracts line items from PDF format</li>
+                            <li>Identifies model numbers in descriptions</li>
+                            <li>Locates and normalizes prices for comparison</li>
+                        </ul>
                     </div>
                 </form>
             </div>
@@ -36,16 +54,17 @@
     </div>
     
     <div class="col-lg-7">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="fas fa-file-alt"></i> Results</h5>
-                <button class="btn btn-sm btn-secondary" id="copy-btn" disabled>
-                    <i class="fas fa-copy"></i> Copy to Clipboard
-                </button>
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2" style="color: var(--primary-green);"></i> Results</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div id="results-container">
-                    <p class="text-center text-muted py-5">Upload a Purchase Order to see results here.</p>
+                    <div class="text-center p-5">
+                        <i class="fas fa-upload fa-3x mb-3" style="color: var(--light-green);"></i>
+                        <p class="text-muted">Upload a Purchase Order to see the verification results here.</p>
+                        <p class="small text-muted">The AI will extract line items, match model numbers and compare prices.</p>
+                    </div>
                 </div>
             </div>
         </div>

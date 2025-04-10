@@ -135,39 +135,53 @@ function displayResults(data) {
   const container = document.getElementById('results-container');
   const copyBtn = document.getElementById('copy-btn');
   
-  // Create the results display
+  // Create a summary table of the results - now first
   let html = `
-    <div class="mb-3">
-      <label for="email-report" class="form-label">Email Report</label>
-      <textarea class="form-control font-monospace" id="email-report" rows="12" readonly>${data.email_report}</textarea>
-    </div>
-  `;
-  
-  // Create a summary table of the results
-  html += `
-    <h5>Summary of Line Items</h5>
-    <div class="table-responsive">
-      <table class="table table-sm">
-        <thead>
-          <tr>
-            <th>Model Number</th>
-            <th>Notes</th>
-            <th>PO Price</th>
-            <th>Book Price</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-table"></i> Summary of Line Items</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Model Number</th>
+                <th>Notes</th>
+                <th>PO Price</th>
+                <th>Book Price</th>
+                <th>Difference</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
   `;
   
   data.comparison_results.forEach(item => {
     let statusClass = '';
+    let priceCompareClass = '';
+    let priceDifference = '';
+    
     switch (item.status) {
       case 'Match':
         statusClass = 'text-success';
         break;
       case 'Mismatch':
         statusClass = 'text-danger';
+        
+        // Calculate and format the price difference with color coding
+        if (item.book_price && item.po_price) {
+          const diff = parseFloat(item.book_price) - parseFloat(item.po_price);
+          if (diff > 0) {
+            // PO price is lower than book price (PO is cheaper)
+            priceCompareClass = 'text-price-higher';
+            priceDifference = `+$${Math.abs(diff).toFixed(2)}`;
+          } else if (diff < 0) {
+            // PO price is higher than book price (PO is more expensive)
+            priceCompareClass = 'text-price-lower';
+            priceDifference = `-$${Math.abs(diff).toFixed(2)}`;
+          }
+        }
         break;
       case 'Model Not Found':
         statusClass = 'text-warning';
@@ -187,21 +201,51 @@ function displayResults(data) {
     
     html += `
       <tr>
-        <td>${item.model}</td>
+        <td><strong>${item.model}</strong></td>
         <td>${descOutput}</td>
-        <td>$${item.po_price}</td>
-        <td>${item.book_price ? '$' + item.book_price : '-'}</td>
-        <td class="${statusClass}">${item.status}</td>
+        <td>$${parseFloat(item.po_price).toFixed(2)}</td>
+        <td>${item.book_price ? '$' + parseFloat(item.book_price).toFixed(2) : '-'}</td>
+        <td class="${priceCompareClass}"><strong>${priceDifference}</strong></td>
+        <td class="${statusClass}"><strong>${item.status}</strong></td>
       </tr>
     `;
   });
   
   html += `
-        </tbody>
-      </table>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    <!-- Email report section (now below the summary) -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-envelope"></i> Email Report</h5>
+        <button class="btn btn-sm btn-outline-success" id="copy-btn">
+          <i class="fas fa-copy"></i> Copy to Clipboard
+        </button>
+      </div>
+      <div class="card-body">
+        <textarea class="form-control font-monospace" id="email-report" rows="12" readonly>${data.email_report}</textarea>
+        <div class="form-text text-muted mt-2">
+          <i class="fas fa-info-circle"></i> Copy this report to send to your team or customer service.
+        </div>
+      </div>
     </div>
   `;
   
   container.innerHTML = html;
   copyBtn.disabled = false;
+  
+  // Re-initialize the copy button event listener (since we recreated the DOM element)
+  document.getElementById('copy-btn').addEventListener('click', function() {
+    const textarea = document.getElementById('email-report');
+    if (textarea) {
+      textarea.select();
+      document.execCommand('copy');
+      showToast('Email report copied to clipboard', 'success');
+    }
+  });
 }

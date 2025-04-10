@@ -1,27 +1,54 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="jumbotron bg-dark p-5 rounded">
-    <h1 class="display-4">Purchase Order Verification System</h1>
-    <p class="lead">Streamline the process of verifying customer Purchase Orders against internal price books.</p>
-    <hr class="my-4">
-    <p>This system allows you to verify pricing in customer Purchase Orders against your internal price books, ensuring accuracy and efficiency in your order processing workflow.</p>
+<div class="jumbotron p-5 rounded" style="background-color: var(--highlight-green);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-4" style="color: var(--dark-green);"><i class="fas fa-shield-alt"></i> OrderGuard AI</h1>
+            <p class="lead">Intelligent Purchase Order verification powered by AI.</p>
+            <hr class="my-4" style="border-color: var(--light-green);">
+            <p>OrderGuard AI uses advanced artificial intelligence to verify pricing in customer Purchase Orders against your internal price books, ensuring accuracy and efficiency in your order processing workflow.</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="fas fa-robot fa-5x mb-3" style="color: var(--primary-green);"></i>
+            <div class="badge bg-success p-2">Powered by Gemini 1.5</div>
+        </div>
+    </div>
+    
     <div class="row mt-5">
         <div class="col-md-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-invoice"></i> Process Purchase Orders</h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-file-invoice"></i> Process Purchase Orders</h5>
-                    <p class="card-text">Upload a customer Purchase Order PDF and compare it against your price books to verify pricing accuracy.</p>
-                    <a href="/process-po" class="btn btn-primary">Process PO</a>
+                    <p class="card-text">Upload a customer Purchase Order PDF and let our AI detect model numbers and prices, even in description fields.</p>
+                    <ul class="text-muted">
+                        <li>Automatically extract line items from PDFs</li>
+                        <li>Find model numbers embedded in descriptions</li>
+                        <li>Compare against your price books with accuracy</li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="/process-po" class="btn btn-primary w-100"><i class="fas fa-file-upload"></i> Process PO</a>
                 </div>
             </div>
         </div>
         <div class="col-md-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-book"></i> Manage Price Books</h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-book"></i> Manage Price Books</h5>
                     <p class="card-text">Upload, view, and manage your internal price books for comparison against customer Purchase Orders.</p>
-                    <a href="/pricebooks" class="btn btn-secondary">Manage Price Books</a>
+                    <ul class="text-muted">
+                        <li>Import Excel files with model numbers and prices</li>
+                        <li>Maintain multiple price books by name</li>
+                        <li>Select the appropriate price book for each verification</li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="/pricebooks" class="btn btn-outline-primary w-100"><i class="fas fa-cog"></i> Manage Price Books</a>
                 </div>
             </div>
         </div>

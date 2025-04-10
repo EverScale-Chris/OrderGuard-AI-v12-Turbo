@@ -1,28 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Price Book Management</h1>
-<p class="lead">Upload and manage your internal price books for comparing Purchase Orders.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 style="color: var(--dark-green);"><i class="fas fa-book"></i> Price Book Management</h2>
+        <p class="lead">Upload and manage your internal price books for comparing Purchase Orders.</p>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-upload"></i> Upload New Price Book</h5>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-upload me-2" style="color: var(--primary-green);"></i>
+                <h5 class="mb-0">Upload New Price Book</h5>
             </div>
             <div class="card-body">
                 <form id="upload-pricebook-form">
-                    <div class="mb-3">
-                        <label for="pricebook-name" class="form-label">Price Book Name</label>
-                        <input type="text" class="form-control" id="pricebook-name" required placeholder="e.g., Q4 2024 Standard">
+                    <div class="mb-4">
+                        <label for="pricebook-name" class="form-label fw-medium">Price Book Name</label>
+                        <input type="text" class="form-control" id="pricebook-name" required placeholder="e.g., Q2 2025 Standard">
                         <div class="form-text">Give your price book a descriptive name</div>
                     </div>
-                    <div class="mb-3">
-                        <label for="pricebook-file" class="form-label">Excel File (.xlsx)</label>
+                    <div class="mb-4">
+                        <label for="pricebook-file" class="form-label fw-medium">Excel File (.xlsx)</label>
                         <input type="file" class="form-control" id="pricebook-file" accept=".xlsx" required>
-                        <div class="form-text">
-                            <strong>Important:</strong> Excel file must contain exactly these column headers:
-                            <ul class="mt-1 mb-0">
+                        <div class="form-text mt-2">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-info-circle me-2" style="color: var(--primary-green);"></i>
+                                <strong>Required Excel Format:</strong>
+                            </div>
+                            <ul class="mb-0 small">
                                 <li>"Item Number" - The product model/SKU</li>
                                 <li>"Base Price" - The price in numeric format</li>
                             </ul>
@@ -31,9 +39,9 @@
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary" id="upload-btn">
                             <span class="spinner-border spinner-border-sm d-none" id="upload-spinner" role="status" aria-hidden="true"></span>
-                            Upload Price Book
+                            <i class="fas fa-cloud-upload-alt me-2"></i> Upload Price Book
                         </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="show-sample-btn">
+                        <button type="button" class="btn btn-outline-success btn-sm" id="show-sample-btn">
                             <i class="fas fa-question-circle"></i> How to format your Excel file
                         </button>
                     </div>
@@ -45,16 +53,18 @@
         <div class="modal fade" id="excelFormatModal" tabindex="-1" aria-labelledby="excelFormatModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="excelFormatModalLabel">Excel File Format Guide</h5>
+                    <div class="modal-header" style="background-color: var(--highlight-green);">
+                        <h5 class="modal-title" id="excelFormatModalLabel" style="color: var(--dark-green);">
+                            <i class="fas fa-table me-2"></i> Excel File Format Guide
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p>Your Excel file must have the following structure:</p>
                         
                         <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
+                            <table class="table table-bordered table-striped">
+                                <thead style="background-color: var(--highlight-green);">
                                     <tr>
                                         <th>Item Number</th>
                                         <th>Base Price</th>
@@ -77,9 +87,9 @@
                             </table>
                         </div>
                         
-                        <div class="alert alert-warning">
-                            <h6><i class="fas fa-exclamation-triangle"></i> Important:</h6>
-                            <ul>
+                        <div class="alert alert-warning mt-3">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i> Important:</h6>
+                            <ul class="mb-0">
                                 <li>Column headers must match <strong>exactly</strong> as shown above</li>
                                 <li>Item Number is the product SKU/identifier</li>
                                 <li>Base Price should be a number (no currency symbols)</li>
@@ -88,7 +98,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">
+                            <i class="fas fa-check me-2"></i> Got it
+                        </button>
                     </div>
                 </div>
             </div>
@@ -96,14 +108,15 @@
     </div>
     
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-list"></i> Available Price Books</h5>
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-list me-2" style="color: var(--primary-green);"></i>
+                <h5 class="mb-0">Available Price Books</h5>
             </div>
             <div class="card-body">
                 <div id="pricebook-list-container">
-                    <div class="d-flex justify-content-center">
-                        <div class="spinner-border text-primary" role="status">
+                    <div class="d-flex justify-content-center py-4">
+                        <div class="spinner-border" style="color: var(--primary-green);" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
