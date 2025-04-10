@@ -1,22 +1,20 @@
 /**
- * Sample data templates for the website.
- * This file contains examples that users can use as reference when creating their price books.
+ * Creates a sample Excel file for demonstrating price book format
  */
-
-// Sample Excel structure for price books
-const samplePriceBookStructure = {
-  headers: ["Model Number", "Correct Base Price"],
-  rows: [
-    ["ABC123", "299.99"],
-    ["XYZ456", "149.50"],
-    ["PROD789", "199.00"]
-  ]
-};
-
-// Function to create a sample Excel file
 function createSampleExcel() {
-  // This is just a reference function 
-  // In a real implementation, this would generate a downloadable Excel file
-  console.log("Sample structure for Excel file:", samplePriceBookStructure);
-  alert("To create a proper price book Excel file, make sure to include column headers exactly as: 'Model Number' and 'Correct Base Price'");
+    // This functionality would require a server-side component to generate an actual Excel file
+    // For our purposes, we'll just show a modal with example data
+    const excelModal = new bootstrap.Modal(document.getElementById('excelFormatModal'));
+    excelModal.show();
 }
+
+// Event listener for the sample data button
+document.addEventListener('DOMContentLoaded', function() {
+    const sampleBtn = document.getElementById('show-sample-btn');
+    if (sampleBtn) {
+        sampleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            createSampleExcel();
+        });
+    }
+});

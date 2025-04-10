@@ -61,7 +61,17 @@ def process_po():
 @app.route('/api/pricebooks', methods=['GET'])
 def get_price_books():
     try:
-        price_books = get_all_price_books()
+        # Get all price books from PostgreSQL instead of Replit DB
+        price_books = []
+        all_price_books = PriceBook.query.order_by(PriceBook.name).all()
+        
+        for book in all_price_books:
+            price_books.append({
+                "id": book.id,
+                "name": book.name,
+                "created_at": book.created_at.isoformat() if book.created_at else None
+            })
+            
         return jsonify(price_books)
     except Exception as e:
         logging.error(f"Error getting price books: {str(e)}")
@@ -90,15 +100,30 @@ def upload_price_book():
             # Parse the Excel file
             price_data = parse_excel_file(filepath)
             
-            # Add to database
+            # Check if price book with the same name already exists
+            existing_book = PriceBook.query.filter_by(name=pricebook_name).first()
+            if existing_book:
+                os.remove(filepath)  # Clean up the temp file
+                return jsonify({"error": f"Price book '{pricebook_name}' already exists"}), 400
+            
+            # Add to database using SQLAlchemy
             pricebook_id = str(uuid.uuid4())
-            add_price_book(pricebook_id, pricebook_name, price_data)
+            new_price_book = PriceBook(id=pricebook_id, name=pricebook_name)
+            
+            # Add price items
+            for model_number, price in price_data.items():
+                new_item = PriceItem(model_number=model_number, price=float(price), price_book_id=pricebook_id)
+                db.session.add(new_item)
+            
+            db.session.add(new_price_book)
+            db.session.commit()
             
             # Clean up the temporary file
             os.remove(filepath)
             
             return jsonify({"success": True, "message": f"Price book '{pricebook_name}' added successfully"})
         except Exception as e:
+            db.session.rollback()  # Rollback the session in case of error
             logging.error(f"Error processing price book: {str(e)}")
             return jsonify({"error": str(e)}), 500
     
@@ -124,19 +149,55 @@ def process_purchase_order():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             
-            # Get price book data
-            price_book = get_price_book_data(price_book_id)
+            # Get price book data from PostgreSQL
+            price_book = PriceBook.query.get(price_book_id)
             if not price_book:
+                os.remove(filepath)  # Clean up
                 return jsonify({"error": "Selected price book not found"}), 404
             
             # Extract data from PDF using Gemini API
             extracted_data = extract_data_from_pdf(filepath)
             
+            # Create a dictionary of model numbers to prices for the selected price book
+            price_book_data = {}
+            price_items = PriceItem.query.filter_by(price_book_id=price_book_id).all()
+            for item in price_items:
+                price_book_data[item.model_number] = item.price
+            
+            # Prepare the price book data structure for the comparison function
+            price_book_for_comparison = {
+                'id': price_book.id,
+                'name': price_book.name,
+                'data': price_book_data
+            }
+            
             # Compare extracted data with price book
-            comparison_results = compare_with_price_book(extracted_data, price_book)
+            comparison_results = compare_with_price_book(extracted_data, price_book_for_comparison)
             
             # Generate email report
-            email_report = generate_email_report(comparison_results, price_book['name'])
+            email_report = generate_email_report(comparison_results, price_book.name)
+            
+            # Save processed PO to database
+            new_po = ProcessedPO(
+                filename=filename,
+                price_book_id=price_book_id
+            )
+            db.session.add(new_po)
+            db.session.flush()  # Get the ID without committing
+            
+            # Save line items
+            for result in comparison_results:
+                line_item = POLineItem(
+                    processed_po_id=new_po.id,
+                    model_number=result["model"],
+                    po_price=float(result["po_price"]) if isinstance(result["po_price"], (int, float, str)) else 0.0,
+                    book_price=float(result["book_price"]) if "book_price" in result and isinstance(result["book_price"], (int, float, str)) else None,
+                    status=result["status"],
+                    discrepancy=float(result["discrepancy"]) if "discrepancy" in result and isinstance(result["discrepancy"], (int, float, str)) else None
+                )
+                db.session.add(line_item)
+            
+            db.session.commit()
             
             # Clean up the temporary file
             os.remove(filepath)
@@ -147,6 +208,7 @@ def process_purchase_order():
                 "comparison_results": comparison_results
             })
         except Exception as e:
+            db.session.rollback()  # Rollback in case of error
             logging.error(f"Error processing purchase order: {str(e)}")
             return jsonify({"error": str(e)}), 500
     
