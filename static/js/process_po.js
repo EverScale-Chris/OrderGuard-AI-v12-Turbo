@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Set up form submission handler
   const form = document.getElementById('process-po-form');
-  form.addEventListener('submit', function(e) {
+  if (form) {
+    form.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const priceBookSelect = document.getElementById('pricebook-select');
@@ -80,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
       spinner.classList.add('d-none');
     });
   });
+  }
   
   // We'll handle the copy button in the displayResults function instead
   // since it's dynamically created
