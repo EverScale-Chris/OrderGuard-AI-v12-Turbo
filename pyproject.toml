@@ -13,5 +13,7 @@ dependencies = [
     "pandas>=2.2.3",
     "psycopg2-binary>=2.9.10",
     "replit>=4.1.1",
+    "sendgrid>=6.11.0",
+    "sqlalchemy>=2.0.40",
     "werkzeug>=3.1.3",
 ]

@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import logging
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
@@ -199,8 +200,8 @@ def process_purchase_order():
             # Compare extracted data with price book
             comparison_results = compare_with_price_book(extracted_data, price_book_for_comparison)
             
-            # Generate email report
-            email_report = generate_email_report(comparison_results, price_book.name)
+            # Generate email report with the filename to extract PO number
+            email_report = generate_email_report(comparison_results, price_book.name, filename)
             
             # Save processed PO to database
             new_po = ProcessedPO(
@@ -326,38 +327,74 @@ def compare_with_price_book(extracted_data, price_book):
     
     return results
 
-def generate_email_report(comparison_results, price_book_name):
-    email_text = f"""Subject: Review of your Purchase Order - Ref Price Book: {price_book_name}
+def extract_po_number_from_filename(filename):
+    """
+    Attempts to extract a PO number from the PDF filename
+    
+    Args:
+        filename (str): The filename of the PDF
+        
+    Returns:
+        str: Extracted PO number or a default placeholder
+    """
+    # Remove file extension and path
+    base_name = os.path.basename(filename)
+    base_name = os.path.splitext(base_name)[0]
+    
+    # Common patterns in PO filenames
+    po_patterns = [
+        r'P0*(\d+)',  # Matches P0000123 or P123
+        r'PO[-_]?0*(\d+)',  # Matches PO-123, PO_123, PO123
+        r'Purchase[-_]?Order[-_]?0*(\d+)',  # Matches Purchase-Order-123
+        r'Order[-_]?0*(\d+)',  # Matches Order-123
+        r'(\d{5,})',  # Matches any sequence of 5+ digits (likely a PO number)
+    ]
+    
+    for pattern in po_patterns:
+        match = re.search(pattern, base_name, re.IGNORECASE)
+        if match:
+            return match.group(1)
+            
+    # If no pattern matches, use the filename without extension as fallback
+    return base_name
+
+def generate_email_report(comparison_results, price_book_name, filename="Unknown PO"):
+    # Extract PO number from filename if available
+    po_number = extract_po_number_from_filename(filename)
+    
+    email_text = f"""Subject: Purchase Order Review - {po_number}
 
 Hi,
 
-Thank you for your Purchase Order. We have reviewed it against our "{price_book_name}" price book. The following details were found for the line items based on the data provided:
+I have reviewed your purchase order ({po_number}). The following discrepancies have been found:
 
 """
     
-    for item in comparison_results:
-        email_text += f"*   **Line Item:** {item['model']}\n"
-        # We don't need to include the full description in the email
-        
-        email_text += f"    *   **PO Price:** ${item['po_price']}\n"
-        
-        if item['status'] == "Match":
-            email_text += f"    *   **Status:** Matched Price Book\n"
-        elif item['status'] == "Mismatch":
-            email_text += f"    *   **Status:** Mismatch - Price Book price is ${item['book_price']}. Discrepancy: ${item['discrepancy']:.2f}.\n"
-        elif item['status'] == "Model Not Found":
-            email_text += f"    *   **Status:** Model Not Found in Selected Price Book. Please verify the model number.\n"
-        elif item['status'] == "Price Format Error":
-            email_text += f"    *   **Status:** Price Format Error - Could not compare prices. Price Book price is ${item['book_price']}.\n"
-        else:
-            email_text += f"    *   **Status:** Data Extraction Issue from PO Line Item. Manual review required.\n"
+    # Get only the mismatched items
+    mismatched_items = [item for item in comparison_results if item['status'] == "Mismatch"]
     
-    email_text += f"""
-Please review any items marked with discrepancies or issues based on the "{price_book_name}" pricing.
-
-Best regards,
-
-Your Company Name
+    # Add a line number counter
+    for i, item in enumerate(mismatched_items, 1):
+        try:
+            po_price = float(item['po_price'])
+            po_price_formatted = f"${po_price:.2f}"
+        except (ValueError, TypeError):
+            po_price_formatted = f"${item['po_price']}"
+            
+        try:
+            book_price = float(item['book_price'])
+            book_price_formatted = f"${book_price:.2f}"
+        except (ValueError, TypeError):
+            book_price_formatted = f"${item['book_price']}"
+            
+        email_text += f"Line Item {i} - {item['model']} - PO Price {po_price_formatted} - Price Book {book_price_formatted}\n"
+    
+    # If there are no mismatched items
+    if not mismatched_items:
+        email_text += "No price discrepancies found. All prices match our records.\n"
+    
+    email_text += """
+Please revise these items and resubmit at your convenience. We truly appreciate your business.
 """
     
     return email_text
