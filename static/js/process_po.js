@@ -150,8 +150,8 @@ function displayResults(data) {
       <table class="table table-sm">
         <thead>
           <tr>
-            <th>Model</th>
-            <th>Description</th>
+            <th>Model Number</th>
+            <th>Notes</th>
             <th>PO Price</th>
             <th>Book Price</th>
             <th>Status</th>
@@ -179,16 +179,16 @@ function displayResults(data) {
         statusClass = 'text-muted';
     }
     
-    // Truncate description if it's too long (more than 50 chars)
-    const description = item.description || '';
-    const truncatedDesc = description.length > 50 
-      ? description.substring(0, 47) + '...' 
-      : description;
+    // We'll keep the description column focused on showing just the model number
+    // that was found in the description (if any)
+    const descOutput = item.status === 'Model Not Found' && item.description 
+      ? 'No match found in description' 
+      : '';
     
     html += `
       <tr>
         <td>${item.model}</td>
-        <td title="${description}">${truncatedDesc}</td>
+        <td>${descOutput}</td>
         <td>$${item.po_price}</td>
         <td>${item.book_price ? '$' + item.book_price : '-'}</td>
         <td class="${statusClass}">${item.status}</td>

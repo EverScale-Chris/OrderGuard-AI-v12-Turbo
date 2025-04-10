@@ -322,9 +322,7 @@ Thank you for your Purchase Order. We have reviewed it against our "{price_book_
     
     for item in comparison_results:
         email_text += f"*   **Line Item:** {item['model']}\n"
-        # Include description if available
-        if 'description' in item and item['description']:
-            email_text += f"    *   **Description:** {item['description']}\n"
+        # We don't need to include the full description in the email
         
         email_text += f"    *   **PO Price:** ${item['po_price']}\n"
         
