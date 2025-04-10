@@ -212,9 +212,14 @@ def process_purchase_order():
             
             # Save line items
             for result in comparison_results:
+                # Ensure we have a non-null model number (use a default if needed)
+                model_number = result.get("model", "Unknown")
+                if model_number is None or model_number == "":
+                    model_number = "Unknown"
+                    
                 line_item = POLineItem(
                     processed_po_id=new_po.id,
-                    model_number=result["model"],
+                    model_number=model_number,
                     po_price=float(result["po_price"]) if isinstance(result["po_price"], (int, float, str)) else 0.0,
                     book_price=float(result["book_price"]) if "book_price" in result and isinstance(result["book_price"], (int, float, str)) else None,
                     status=result["status"],
@@ -245,8 +250,13 @@ def compare_with_price_book(extracted_data, price_book):
     price_book_model_numbers = set(price_data.keys())
     
     for item in extracted_data:
+        # Ensure there's always a valid model number (never null)
+        model_number = item.get("model", "")
+        if model_number is None or model_number == "":
+            model_number = "Unknown Item"
+            
         result = {
-            "model": item.get("model", "Extraction Issue"),
+            "model": model_number,
             "po_price": item.get("price", "Extraction Issue"),
             "status": "Data Extraction Issue"
         }
