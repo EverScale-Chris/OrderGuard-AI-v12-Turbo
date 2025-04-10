@@ -1,0 +1,127 @@
+You are an Expert Web Developer specializing in building applications on Replit. Your task is to design the architecture and outline the key components for a web application hosted and run entirely within a Replit environment (e.g., using Python/Flask or Node.js/Express). This application will streamline the process of verifying customer Purchase Orders (POs) against specific, user-selectable internal price books, ensuring accuracy based strictly on the provided data.
+
+Core Requirements & Workflow (Replit Context):
+
+Strict Data Handling: The application must operate solely on the data explicitly extracted from the uploaded PDF and the data present in the selected price book stored within Replit. No guessing or inferring of model numbers, prices, or matches is allowed. Report ambiguities or missing data accurately.
+
+Environment: The entire application (frontend, backend, data storage) will run within a single Repl. Choose a suitable web framework (e.g., Flask/Python or Express/Node.js).
+
+Price Book Management (Separate UI Route/Page):
+
+Implement a distinct web page/route (/pricebooks, /admin/pricebooks, etc.) for managing Price Books.
+
+Upload: Allow users to upload Price Books in .xlsx format via an HTML form.
+
+Naming: The upload form must require a unique, descriptive name for the price book (e.g., "Q4 2024 Standard", "Major Client Discount Tier").
+
+Backend Processing (XLSX Upload):
+
+An HTTP endpoint receives the uploaded XLSX file and the name.
+
+Use a suitable library (e.g., pandas/openpyxl for Python, xlsx for Node.js) to parse the Excel file, extracting "Model Number" and "Correct Base Price" columns.
+
+Data Storage: Store the parsed price book data using Replit Database (replit/database). Structure it effectively, e.g.:
+
+Store metadata (ID -> Name map) perhaps under a key like pricebook_index.
+
+Store the actual price data (Model -> Price mapping) for each book under a unique key like pricebook_data_{id} (where ID is generated or derived from the name).
+
+Listing: The management page should query Replit DB to display a list of available price books by name.
+
+Purchase Order Processing (Main UI Route/Page):
+
+Price Book Selection: Before uploading a PO, fetch the list of available price book names/IDs from a backend endpoint querying Replit DB. Display these in a dropdown menu for user selection.
+
+PDF Upload: An HTML form allows the user to upload the customer's Purchase Order (PDF) and submit it along with the selected Price Book identifier (priceBookId).
+
+Backend Processing (PO Upload):
+
+An HTTP endpoint receives the uploaded PDF file data and the selected priceBookId.
+
+Temporarily save the PDF file to the Repl's local filesystem for processing.
+
+Backend Logic (Within the Web Framework):
+
+PDF Parsing (Gemini API):
+
+Securely retrieve the Google Gemini API Key from Replit Secrets. Never hardcode the key.
+
+Call the Google Gemini API (using an appropriate client library like google-generativeai for Python) with the temporarily saved PDF file.
+
+Crucially, extract only clearly identifiable data: Model Number/SKU and Price Listed on PO for each line item. Handle errors or ambiguities from Gemini gracefully, noting them in the results.
+
+Price Book Retrieval (Replit DB): Fetch the specific price book data (Model -> Price map) from Replit DB using the priceBookId provided by the user (e.g., retrieve the value associated with pricebook_data_{selected_id}).
+
+Strict Comparison: Compare the extracted PDF line items against the selected Price Book data from Replit DB, matching strictly by Model Number.
+
+Discrepancy Identification: Determine status ("Match", "Mismatch", "Model Not Found", "Data Extraction Issue") based only on extracted/retrieved data. Calculate discrepancies if applicable.
+
+Cleanup: Delete the temporary PDF file from the Repl filesystem after processing.
+
+Output Generation & Response:
+
+Generate the summary report text formatted for email (including the selected price book name in the text), reflecting the strict comparison results.
+
+Subject: Review of your Purchase Order [Optional: Insert PO Number if parsable] - Ref Price Book: [Selected Price Book Name]
+
+Hi [Customer Name - Manual Entry Placeholder or Omit],
+
+Thank you for your Purchase Order. We have reviewed it against our "[Selected Price Book Name]" price book. The following details were found for the line items based on the data provided:
+
+*   **Line Item:** [Model Number from PO, or 'Extraction Issue']
+    *   **PO Price:** $[Price from PO, or 'Extraction Issue']
+    *   **Status:** Matched Price Book
+*   **Line Item:** [Model Number from PO]
+    *   **PO Price:** $[Price from PO]
+    *   **Status:** Mismatch - Price Book price is $[Correct Price from Selected Price Book]. Discrepancy: $[Difference Amount].
+*   **Line Item:** [Model Number from PO]
+    *   **PO Price:** $[Price from PO]
+    *   **Status:** Model Not Found in Selected Price Book. Please verify the model number.
+*   **Line Item:** [Model Number Issue]
+    *   **PO Price:** $[Price Issue]
+    *   **Status:** Data Extraction Issue from PO Line Item. Manual review required.
+*   [Continue for all line items processed]...
+
+Please review any items marked with discrepancies or issues based on the "[Selected Price Book Name]" pricing.
+
+Best regards,
+
+[Your Company Name/Contact Person]
+Use code with caution.
+Send Results to Frontend: The backend endpoint should return the generated text (and potentially structured status data) to the frontend, likely as a JSON response.
+
+Display/Copy Output (Frontend):
+
+Use JavaScript on the main page to handle the form submission (potentially asynchronously using fetch or AJAX).
+
+Display processing status updates (e.g., "Uploading...", "Processing...", "Done").
+
+On receiving the response from the backend, display the generated email text in a <textarea> or similar element.
+
+Include a "Copy to Clipboard" button functioning via JavaScript.
+
+Your Task:
+
+Based on this Replit-focused workflow, provide a detailed breakdown:
+
+Recommended Replit Setup: Specify the chosen language/framework (e.g., Python/Flask or Node.js/Express). List key Replit features to use: Web Hosting, Replit Database, Replit Secrets.
+
+Data Storage (Replit DB): Define the key structure strategy for storing Price Book metadata and data efficiently in Replit's key-value database. Outline how processed PO results could potentially be stored if needed (e.g., under keys like processed_po_{uuid}).
+
+Backend Endpoints/Routes: Describe the necessary HTTP endpoints (e.g., /upload-pricebook, /get-pricebooks, /process-po). Detail their purpose, expected inputs (form data, JSON payloads, file uploads), core logic (parsing, Gemini call, DB interaction, comparison), and outputs (JSON responses, status codes). Emphasize secure API key handling via Replit Secrets.
+
+API Integration (Gemini): Detail how the backend code will securely use the API key from Replit Secrets to interact with the Google Gemini API, passing the PDF data and handling the response.
+
+Frontend Considerations: Outline the necessary HTML structure, CSS (basic styling), and client-side JavaScript needed for:
+
+The Price Book Management page (upload form, list display).
+
+The PO Processing page (price book dropdown populated dynamically, PDF upload form, status display, result text area, copy button).
+
+Asynchronous communication with the backend endpoints.
+
+Price Book Management Flow: Detail the sequence within Replit: User uploads XLSX -> Backend endpoint receives file/name -> Parses XLSX -> Stores structured data and metadata in Replit DB.
+
+Potential Limitations: Briefly mention any potential limitations of using Replit for this compared to a cloud platform like Firebase (e.g., Replit DB query limitations, filesystem persistence nuances, scalability).
+
+Provide a clear, structured response suitable for guiding development within the Replit environment, focusing on accuracy, user selection, secure secrets management, and using Replit's native features.
