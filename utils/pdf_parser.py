@@ -15,9 +15,9 @@ def extract_data_from_pdf(pdf_path):
     """
     try:
         # Get API key from environment variable
-        api_key = os.environ.get("GEMINI_API_KEY")
+        api_key = os.environ.get("GOOGLE_GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("Gemini API key not found in environment variables")
+            raise ValueError("Google Gemini API key not found in environment variables")
         
         # Configure Gemini API
         genai.configure(api_key=api_key)
