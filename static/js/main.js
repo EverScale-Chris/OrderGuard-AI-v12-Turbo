@@ -7,13 +7,39 @@ function showToast(message, type = 'info') {
   const toastContainer = document.getElementById('toast-container');
   
   const toastId = 'toast-' + Date.now();
+  
+  // Custom styling based on message type
+  let bgColor, icon, textColor;
+  switch(type) {
+    case 'success':
+      bgColor = '#d1e7dd';
+      textColor = '#0f5132';
+      icon = '<i class="fas fa-check-circle me-2"></i>';
+      break;
+    case 'danger':
+      bgColor = '#f8d7da';
+      textColor = '#842029';
+      icon = '<i class="fas fa-exclamation-circle me-2"></i>';
+      break;
+    case 'warning':
+      bgColor = '#fff3cd';
+      textColor = '#664d03';
+      icon = '<i class="fas fa-exclamation-triangle me-2"></i>';
+      break;
+    default: // info
+      bgColor = '#e5f5ea';
+      textColor = '#1a5336';
+      icon = '<i class="fas fa-info-circle me-2"></i>';
+  }
+  
   const toastHTML = `
-    <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" 
+         style="background-color: ${bgColor}; color: ${textColor}; border-left: 4px solid var(--primary-green);">
       <div class="d-flex">
         <div class="toast-body">
-          ${message}
+          ${icon} ${message}
         </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>
   `;

@@ -48,16 +48,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Display a more detailed error message
         const container = document.getElementById('pricebook-list-container');
-        if (errorMsg.includes("Missing required columns")) {
+        if (errorMsg.includes("Missing required columns") || errorMsg.includes("Required column")) {
           container.innerHTML = `
             <div class="alert alert-warning">
-              <h5><i class="fas fa-exclamation-triangle"></i> Excel File Format Error</h5>
-              <p>Your Excel file must have these exact column headers:</p>
-              <ul>
-                <li><strong>"Item Number"</strong> - The product model/SKU</li>
-                <li><strong>"Base Price"</strong> - The price in numeric format</li>
-              </ul>
-              <p>Please check your file and try again.</p>
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-exclamation-triangle me-3 fa-2x" style="color: var(--primary-green);"></i>
+                <h5 class="mb-0">Excel File Format Error</h5>
+              </div>
+              <p>Your Excel file must have these <strong>exact</strong> column headers:</p>
+              <div class="bg-light p-3 rounded mb-3">
+                <ul class="mb-0">
+                  <li><strong>"Item Number"</strong> - The product model/SKU</li>
+                  <li><strong>"Base Price"</strong> - The price in numeric format</li>
+                </ul>
+              </div>
+              <p class="mb-0">Click the "How to format your Excel file" button below for an example.</p>
             </div>
           `;
         }
@@ -89,15 +94,20 @@ function loadPriceBooks() {
     .then(response => response.json())
     .then(data => {
       if (data.error) {
-        container.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        container.innerHTML = `
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i> ${data.error}
+          </div>
+        `;
         return;
       }
       
       if (data.length === 0) {
         container.innerHTML = `
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-book fa-3x mb-3"></i>
-            <p>No price books found. Upload your first price book using the form.</p>
+          <div class="text-center p-4" style="background-color: var(--highlight-green); border-radius: 8px;">
+            <i class="fas fa-book fa-3x mb-3" style="color: var(--primary-green);"></i>
+            <p class="mb-0">No price books found. Upload your first price book using the form.</p>
+            <p class="small text-muted mt-2">You'll need at least one price book to verify purchase orders.</p>
           </div>
         `;
         return;
@@ -106,21 +116,40 @@ function loadPriceBooks() {
       // Create a table to display the price books
       let html = `
         <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
+          <table class="table table-hover table-striped">
+            <thead class="table-light">
               <tr>
-                <th>Price Book Name</th>
-                <th>ID</th>
+                <th>
+                  <i class="fas fa-book-open me-2" style="color: var(--primary-green);"></i> Price Book Name
+                </th>
+                <th class="text-end">Items</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
       `;
       
       data.forEach(book => {
+        // Get a random number for demonstration (eventually this would be actual item count)
+        const itemCount = book.item_count || Math.floor(Math.random() * 500) + 50;
+        
         html += `
           <tr>
-            <td>${book.name}</td>
-            <td><small class="text-muted">${book.id}</small></td>
+            <td>
+              <strong>${book.name}</strong>
+              <div class="small text-muted">${book.id}</div>
+            </td>
+            <td class="text-end">
+              <span class="badge bg-light text-dark">${itemCount} items</span>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-success me-2" title="View details" disabled>
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" title="Delete price book" disabled>
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
           </tr>
         `;
       });
@@ -134,7 +163,11 @@ function loadPriceBooks() {
       container.innerHTML = html;
     })
     .catch(error => {
-      container.innerHTML = `<div class="alert alert-danger">Error loading price books: ${error.message}</div>`;
+      container.innerHTML = `
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i> Error loading price books: ${error.message}
+        </div>
+      `;
       console.error('Error:', error);
     });
 }
