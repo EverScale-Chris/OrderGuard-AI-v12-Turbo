@@ -6,86 +6,258 @@
     <title>OrderGuard AI</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts - SF Pro inspired fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-green: #2e8b57;
-            --light-green: #98d8ae;
-            --dark-green: #1a5336;
-            --highlight-green: #e5f5ea;
+            /* Modern Apple-inspired color palette */
+            --primary-green: #34c759;
+            --light-green: #e3f9ea;
+            --dark-green: #248a3d;
+            --highlight-green: #f2fdf5;
+            --app-gray: #f5f5f7;
+            --app-black: #1d1d1f;
+            --app-border: #d2d2d7;
+            --app-text: #86868b;
+            --app-danger: #ff3b30;
+            --app-success: #34c759;
+            --app-warning: #ff9500;
+            --app-info: #007aff;
         }
         
+        /* Global styling */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--app-black);
+            background-color: #ffffff;
+            line-height: 1.5;
+            letter-spacing: -0.01em;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Navbar styling */
         .navbar {
-            background-color: var(--primary-green) !important;
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: saturate(180%) blur(20px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+            padding: 15px 0;
         }
         
-        .navbar-brand, .nav-link {
-            color: white !important;
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--app-black) !important;
+            letter-spacing: -0.03em;
+        }
+        
+        .nav-link {
+            color: var(--app-black) !important;
+            font-weight: 500;
+            padding: 8px 16px !important;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(0,0,0,0.04);
+        }
+        
+        .nav-link.active {
+            color: var(--primary-green) !important;
+        }
+        
+        /* Button styling */
+        .btn {
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
         
         .btn-primary {
             background-color: var(--primary-green);
             border-color: var(--primary-green);
+            color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover, .btn-primary:focus {
             background-color: var(--dark-green);
             border-color: var(--dark-green);
+            box-shadow: 0 0 0 0.2rem rgba(52, 199, 89, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-green);
+            color: white;
+        }
+        
+        /* Card styling */
+        .card {
+            border-radius: 12px;
+            border: 1px solid var(--app-border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.07);
         }
         
         .card-header {
-            background-color: var(--highlight-green);
-            border-bottom: 1px solid var(--light-green);
-            color: var(--dark-green);
+            background-color: white;
+            border-bottom: 1px solid var(--app-border);
+            padding: 18px 20px;
+            font-weight: 600;
         }
         
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Form elements */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border-color: var(--app-border);
+            padding: 12px 16px;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(52, 199, 89, 0.2);
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--app-black);
+        }
+        
+        .form-text {
+            color: var(--app-text);
+            font-size: 0.85rem;
+        }
+        
+        /* Tables */
+        .table {
+            color: var(--app-black);
+        }
+        
+        .table thead th {
+            font-weight: 600;
+            border-bottom-width: 1px;
+            color: var(--app-text);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        
+        /* Footer styling */
         .footer {
-            background-color: var(--primary-green) !important;
-            color: white !important;
+            background-color: var(--app-gray) !important;
+            color: var(--app-text) !important;
+            padding: 2rem 0;
+            font-size: 0.9rem;
         }
         
+        /* Price indicators */
         .text-price-higher {
-            color: #dc3545 !important;
+            color: var(--app-danger) !important;
         }
         
         .text-price-lower {
-            color: #198754 !important;
+            color: var(--app-success) !important;
+        }
+        
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .content-animation {
+            animation: fadeIn 0.5s ease-out;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg mb-4">
+    <nav class="navbar navbar-expand-lg mb-4 fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-shield-alt"></i> OrderGuard AI</a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" class="me-2">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="var(--primary-green)" stroke-width="2" />
+                    <path d="M12 6V12L16 16" stroke="var(--primary-green)" stroke-width="2" stroke-linecap="round" />
+                    <path d="M7 10L17 10" stroke="var(--primary-green)" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>OrderGuard AI</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item mx-1">
+                        <a class="nav-link {{ 'active' if request.path == '/' }}" href="/"><i class="fas fa-home me-1"></i> Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/process-po"><i class="fas fa-file-invoice"></i> Process PO</a>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link {{ 'active' if request.path == '/process-po' }}" href="/process-po"><i class="fas fa-file-invoice me-1"></i> Process PO</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pricebooks"><i class="fas fa-book"></i> Price Books</a>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link {{ 'active' if request.path == '/pricebooks' }}" href="/pricebooks"><i class="fas fa-book me-1"></i> Price Books</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
     
-    <div class="container">
-        {% block content %}{% endblock %}
+    <div class="container" style="margin-top: 100px;">
+        <div class="content-animation">
+            {% block content %}{% endblock %}
+        </div>
     </div>
     
-    <footer class="footer mt-5 py-3 text-center">
+    <footer class="footer mt-5 py-4">
         <div class="container">
-            <span>OrderGuard AI | Powered by Gemini | &copy; 2025</span>
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <span class="d-block mb-2 mb-md-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="me-1">
+                            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="var(--primary-green)" stroke-width="2" />
+                            <path d="M12 6V12L16 16" stroke="var(--primary-green)" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        OrderGuard AI &copy; 2025
+                    </span>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <span class="small">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-robot me-1"></i>Powered by Gemini
+                        </span>
+                        <span>Purchase Order Verification System</span>
+                    </span>
+                </div>
+            </div>
         </div>
     </footer>
     

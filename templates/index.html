@@ -1,57 +1,116 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="jumbotron p-5 rounded" style="background-color: var(--highlight-green);">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <h1 class="display-4" style="color: var(--dark-green);"><i class="fas fa-shield-alt"></i> OrderGuard AI</h1>
-            <p class="lead">Intelligent Purchase Order verification powered by AI.</p>
-            <hr class="my-4" style="border-color: var(--light-green);">
-            <p>OrderGuard AI uses advanced artificial intelligence to verify pricing in customer Purchase Orders against your internal price books, ensuring accuracy and efficiency in your order processing workflow.</p>
+<!-- Hero Section -->
+<section class="py-5">
+    <div class="row gx-5 align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0">
+            <h1 class="display-4 fw-bold mb-3" style="letter-spacing: -0.03em; line-height: 1.1;">Verify Purchase Orders with Precision AI</h1>
+            <p class="lead fs-4 mb-4" style="font-weight: 400; color: var(--app-text);">Intelligent verification powered by advanced machine learning to ensure pricing accuracy.</p>
+            <div class="d-flex flex-wrap gap-3 mb-4">
+                <a href="/process-po" class="btn btn-primary btn-lg px-4 py-3">
+                    <i class="fas fa-file-invoice me-2"></i> Process Purchase Order
+                </a>
+                <a href="/pricebooks" class="btn btn-outline-secondary btn-lg px-4 py-3">
+                    <i class="fas fa-book me-2"></i> Manage Price Books
+                </a>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-light text-dark p-2 me-3">
+                    <i class="fas fa-robot me-1"></i> Gemini AI
+                </span>
+                <span class="badge bg-light text-dark p-2">
+                    <i class="fas fa-bolt me-1"></i> Fast Processing
+                </span>
+            </div>
         </div>
-        <div class="col-md-4 text-center">
-            <i class="fas fa-robot fa-5x mb-3" style="color: var(--primary-green);"></i>
-            <div class="badge bg-success p-2">Powered by Gemini 1.5</div>
+        <div class="col-lg-6">
+            <div class="position-relative">
+                <div class="p-5 rounded-4" style="background: linear-gradient(145deg, var(--light-green), var(--highlight-green));">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-100 h-100" style="filter: drop-shadow(0px 10px 20px rgba(52, 199, 89, 0.2));">
+                        <path fill="var(--primary-green)" d="M45.7,-77.2C59.5,-70.3,71.3,-58.6,79.1,-44.5C86.9,-30.4,90.7,-14,89.9,1.9C89.2,17.8,83.8,33.2,74.7,46.2C65.6,59.2,52.7,69.8,38.5,75.9C24.3,82,10.8,83.5,-3.2,82.2C-17.2,80.9,-31.7,76.8,-45.3,69.6C-58.9,62.4,-71.5,52.1,-78.3,38.8C-85.2,25.5,-86.3,9.1,-84.8,-7C-83.3,-23.1,-79.3,-39.1,-70.1,-51.6C-60.9,-64.1,-46.6,-73.1,-32.2,-79.6C-17.9,-86.1,-3.6,-90,9.5,-86.1C22.6,-82.3,32,-84.1,45.7,-77.2Z" transform="translate(100 100)" />
+                    </svg>
+                    <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                        <div class="text-center">
+                            <i class="fas fa-shield-alt fa-5x mb-3" style="color: white;"></i>
+                            <h3 class="text-white fw-bold">OrderGuard AI</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="position-absolute top-0 end-0 translate-middle-y">
+                    <div class="bg-white rounded-circle p-3 shadow-sm">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 6l-6-4-6 4M12 2v7M12 9v13M19 9v10M5 9v10" stroke="var(--primary-green)" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 mt-4">
+    <div class="row">
+        <div class="col-12 mb-4 text-center">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="text-muted mb-0">Verify purchase orders against price books in three simple steps</p>
         </div>
     </div>
     
-    <div class="row mt-5">
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-file-invoice"></i> Process Purchase Orders</h5>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Upload a customer Purchase Order PDF and let our AI detect model numbers and prices, even in description fields.</p>
-                    <ul class="text-muted">
-                        <li>Automatically extract line items from PDFs</li>
-                        <li>Find model numbers embedded in descriptions</li>
-                        <li>Compare against your price books with accuracy</li>
-                    </ul>
-                </div>
-                <div class="card-footer bg-white">
-                    <a href="/process-po" class="btn btn-primary w-100"><i class="fas fa-file-upload"></i> Process PO</a>
+    <div class="row g-4 mt-2">
+        <div class="col-md-4">
+            <div class="card border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                        <i class="fas fa-upload fa-2x" style="color: var(--primary-green);"></i>
+                    </div>
+                    <h4 class="mb-3">1. Upload Price Books</h4>
+                    <p class="text-muted">Import your Excel files with model numbers and prices to create reference price books.</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-book"></i> Manage Price Books</h5>
+        
+        <div class="col-md-4">
+            <div class="card border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                        <i class="fas fa-file-pdf fa-2x" style="color: var(--primary-green);"></i>
+                    </div>
+                    <h4 class="mb-3">2. Upload PO</h4>
+                    <p class="text-muted">Upload customer Purchase Order PDF files and let AI extract the line items automatically.</p>
                 </div>
-                <div class="card-body">
-                    <p class="card-text">Upload, view, and manage your internal price books for comparison against customer Purchase Orders.</p>
-                    <ul class="text-muted">
-                        <li>Import Excel files with model numbers and prices</li>
-                        <li>Maintain multiple price books by name</li>
-                        <li>Select the appropriate price book for each verification</li>
-                    </ul>
-                </div>
-                <div class="card-footer bg-white">
-                    <a href="/pricebooks" class="btn btn-outline-primary w-100"><i class="fas fa-cog"></i> Manage Price Books</a>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                        <i class="fas fa-check-circle fa-2x" style="color: var(--primary-green);"></i>
+                    </div>
+                    <h4 class="mb-3">3. Verify Accuracy</h4>
+                    <p class="text-muted">Get instant comparisons with color-coded discrepancies and ready-to-share email reports.</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 mt-3">
+    <div class="card border-0 rounded-4 overflow-hidden">
+        <div class="p-5" style="background: linear-gradient(to right, var(--app-gray), var(--highlight-green));">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mb-4 mb-lg-0">
+                    <h2 class="fw-bold mb-3">Ready to verify your first Purchase Order?</h2>
+                    <p class="mb-0">Upload a price book and start processing your POs with AI-powered verification today.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="/process-po" class="btn btn-primary btn-lg px-4">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

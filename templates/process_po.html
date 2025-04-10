@@ -1,69 +1,102 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
     <div>
-        <h2 style="color: var(--dark-green);"><i class="fas fa-file-invoice"></i> Process Purchase Order</h2>
-        <p class="lead">Upload a customer Purchase Order PDF to verify against your price books.</p>
+        <h2 class="display-6 fw-bold mb-1">Process Purchase Order</h2>
+        <p class="lead text-muted">Verify pricing accuracy with AI-powered PDF processing</p>
     </div>
-    <div class="text-end d-none d-md-block">
-        <div class="badge bg-success p-2 mb-2">AI-Powered Extraction</div>
-        <div class="small text-muted">Using Gemini 1.5 Flash</div>
+    <div class="mt-3 mt-md-0 d-flex align-items-center">
+        <div class="badge rounded-pill bg-light text-dark px-3 py-2 d-flex align-items-center">
+            <span class="pulse-dot me-2"></span>
+            <span>AI Processing Active</span>
+        </div>
     </div>
 </div>
 
-<div class="row">
+<div class="row gx-5">
     <div class="col-lg-5">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header d-flex align-items-center">
-                <i class="fas fa-upload me-2" style="color: var(--primary-green);"></i>
-                <h5 class="mb-0">Upload Purchase Order</h5>
+        <div class="card mb-4 border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header border-0 bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="background-color: var(--light-green); width: 40px; height: 40px;">
+                        <i class="fas fa-upload" style="color: var(--primary-green);"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-0">Upload Document</h5>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body px-4 py-4">
                 <form id="process-po-form">
                     <div class="mb-4">
-                        <label for="pricebook-select" class="form-label fw-medium">Select Price Book</label>
+                        <label for="pricebook-select" class="form-label mb-2">Reference Price Book</label>
                         <select class="form-select" id="pricebook-select" required>
                             <option value="" selected disabled>Loading price books...</option>
                         </select>
-                        <div class="form-text">Choose the price book to compare against</div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="po-file" class="form-label fw-medium">Purchase Order (PDF)</label>
-                        <input type="file" class="form-control" id="po-file" accept=".pdf" required>
-                        <div class="form-text">Upload the customer's Purchase Order in PDF format</div>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary" id="process-btn">
-                            <span class="spinner-border spinner-border-sm d-none" id="process-spinner" role="status" aria-hidden="true"></span>
-                            <i class="fas fa-cogs me-2"></i> Process Purchase Order
-                        </button>
+                        <div class="form-text">Select which price book to compare against</div>
                     </div>
                     
-                    <div class="mt-4 p-3" style="background-color: var(--highlight-green); border-radius: 8px;">
-                        <h6 style="color: var(--dark-green);"><i class="fas fa-magic"></i> How AI Helps</h6>
-                        <ul class="mb-0 small">
-                            <li>Extracts line items from PDF format</li>
-                            <li>Identifies model numbers in descriptions</li>
-                            <li>Locates and normalizes prices for comparison</li>
-                        </ul>
+                    <div class="mb-4">
+                        <label for="po-file" class="form-label mb-2">Purchase Order PDF</label>
+                        <div class="drop-zone rounded-3 p-5 text-center bg-light position-relative mb-2">
+                            <input type="file" class="form-control visually-hidden position-absolute inset-0 w-100 h-100 cursor-pointer opacity-0" 
+                                   id="po-file" accept=".pdf" required>
+                            <div class="mb-3">
+                                <i class="fas fa-file-pdf fa-2x mb-3" style="color: var(--primary-green);"></i>
+                                <h6 class="mb-1">Drop your PDF file here</h6>
+                                <p class="mb-0 small text-muted">or click to browse files</p>
+                            </div>
+                        </div>
+                        <div id="file-selected" class="d-none alert alert-light d-flex align-items-center">
+                            <i class="fas fa-file-pdf me-2" style="color: var(--primary-green);"></i>
+                            <span id="file-name">No file selected</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary py-3" id="process-btn">
+                            <span class="spinner-border spinner-border-sm d-none" id="process-spinner" role="status" aria-hidden="true"></span>
+                            <i class="fas fa-bolt me-2"></i> Process Purchase Order
+                        </button>
                     </div>
                 </form>
+                
+                <div class="mt-4">
+                    <div class="card bg-light border-0 rounded-3">
+                        <div class="card-body p-3">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-robot fa-2x" style="color: var(--primary-green);"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-semibold mb-2">AI-Powered Extraction</h6>
+                                    <p class="small text-muted mb-0">Our AI can identify model numbers even when embedded in description fields, ensuring comprehensive verification.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-lg-7">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-file-alt me-2" style="color: var(--primary-green);"></i> Results</h5>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header border-0 bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="background-color: var(--light-green); width: 40px; height: 40px;">
+                        <i class="fas fa-clipboard-check" style="color: var(--primary-green);"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-0">Verification Results</h5>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div id="results-container">
                     <div class="text-center p-5">
-                        <i class="fas fa-upload fa-3x mb-3" style="color: var(--light-green);"></i>
-                        <p class="text-muted">Upload a Purchase Order to see the verification results here.</p>
-                        <p class="small text-muted">The AI will extract line items, match model numbers and compare prices.</p>
+                        <img src="https://cdn.jsdelivr.net/gh/lucide-icons/lucide@latest/icons/clipboard-check.svg" 
+                             alt="Verification" width="80" height="80" class="mb-4 opacity-25">
+                        <h5 class="fw-semibold mb-3">Ready to Verify Purchase Orders</h5>
+                        <p class="text-muted mb-1">Upload a PDF to start the verification process</p>
+                        <p class="small text-muted">The AI will analyze for pricing discrepancies instantly</p>
                     </div>
                 </div>
             </div>
@@ -75,8 +108,79 @@
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
     <div id="toast-container"></div>
 </div>
+
+<style>
+    /* Pulsing dot for AI active indicator */
+    .pulse-dot {
+        width: 10px;
+        height: 10px;
+        background-color: var(--primary-green);
+        border-radius: 50%;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .pulse-dot:before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: var(--primary-green);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        opacity: 0.7;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+        70% {
+            transform: scale(2);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 0;
+        }
+    }
+    
+    /* File drop zone styling */
+    .drop-zone {
+        border: 2px dashed var(--app-border);
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone:hover {
+        border-color: var(--primary-green);
+        background-color: var(--highlight-green) !important;
+    }
+    
+    /* Custom cursor for the drop zone */
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/process_po.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show file name when selected
+        const fileInput = document.getElementById('po-file');
+        const fileSelected = document.getElementById('file-selected');
+        const fileName = document.getElementById('file-name');
+        
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+                fileSelected.classList.remove('d-none');
+            } else {
+                fileSelected.classList.add('d-none');
+            }
+        });
+    });
+</script>
 {% endblock %}

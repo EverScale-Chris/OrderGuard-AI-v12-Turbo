@@ -134,23 +134,92 @@ function loadPriceBooksDropdown() {
 function displayResults(data) {
   const container = document.getElementById('results-container');
   
-  // Create a summary table of the results - now first
+  // First create a results overview card
+  let matchCount = 0;
+  let mismatchCount = 0;
+  let notFoundCount = 0;
+  
+  // Count the statuses
+  data.comparison_results.forEach(item => {
+    if (item.status === 'Match') matchCount++;
+    else if (item.status === 'Mismatch') mismatchCount++;
+    else if (item.status === 'Model Not Found') notFoundCount++;
+  });
+  
+  // Create HTML with status overview
   let html = `
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-table"></i> Summary of Line Items</h5>
+    <div class="p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-semibold mb-0">Verification Complete</h5>
+        <span class="badge bg-light text-dark px-3 py-2">
+          ${data.comparison_results.length} items processed
+        </span>
+      </div>
+      
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card border-0 bg-light rounded-4 h-100">
+            <div class="card-body p-3 text-center">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                style="background-color: rgba(52, 199, 89, 0.1); width: 50px; height: 50px;">
+                <i class="fas fa-check-circle fa-lg" style="color: var(--app-success);"></i>
+              </div>
+              <h3 class="fw-bold mb-0">${matchCount}</h3>
+              <p class="small text-muted mb-0">Matching Prices</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card border-0 bg-light rounded-4 h-100">
+            <div class="card-body p-3 text-center">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                style="background-color: rgba(255, 59, 48, 0.1); width: 50px; height: 50px;">
+                <i class="fas fa-exclamation-circle fa-lg" style="color: var(--app-danger);"></i>
+              </div>
+              <h3 class="fw-bold mb-0">${mismatchCount}</h3>
+              <p class="small text-muted mb-0">Price Discrepancies</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card border-0 bg-light rounded-4 h-100">
+            <div class="card-body p-3 text-center">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                style="background-color: rgba(255, 149, 0, 0.1); width: 50px; height: 50px;">
+                <i class="fas fa-question-circle fa-lg" style="color: var(--app-warning);"></i>
+              </div>
+              <h3 class="fw-bold mb-0">${notFoundCount}</h3>
+              <p class="small text-muted mb-0">Not Found</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Summary table -->
+    <div class="card mb-4 border-0 rounded-4 overflow-hidden">
+      <div class="card-header bg-white py-3 px-4 border-0">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+            style="background-color: var(--light-green); width: 32px; height: 32px;">
+            <i class="fas fa-table" style="color: var(--primary-green);"></i>
+          </div>
+          <h6 class="fw-semibold mb-0">Line Item Details</h6>
+        </div>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-striped table-hover mb-0">
-            <thead class="table-light">
+          <table class="table table-hover mb-0">
+            <thead style="background-color: var(--app-gray);">
               <tr>
-                <th>Model Number</th>
-                <th>Notes</th>
-                <th>PO Price</th>
-                <th>Book Price</th>
-                <th>Difference</th>
-                <th>Status</th>
+                <th class="px-4 py-3 text-nowrap">Model Number</th>
+                <th class="px-4 py-3">Notes</th>
+                <th class="px-4 py-3 text-end">PO Price</th>
+                <th class="px-4 py-3 text-end">Book Price</th>
+                <th class="px-4 py-3 text-end">Difference</th>
+                <th class="px-4 py-3 text-center">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -198,14 +267,52 @@ function displayResults(data) {
       ? 'No match found in description' 
       : '';
     
+    // Create a badge for the status
+    let statusBadge = '';
+    switch (item.status) {
+      case 'Match':
+        statusBadge = `<span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">
+                        <i class="fas fa-check-circle me-1"></i> Match
+                      </span>`;
+        break;
+      case 'Mismatch':
+        statusBadge = `<span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2">
+                        <i class="fas fa-exclamation-circle me-1"></i> Mismatch
+                      </span>`;
+        break;
+      case 'Model Not Found':
+        statusBadge = `<span class="badge rounded-pill bg-warning-subtle text-warning px-3 py-2">
+                        <i class="fas fa-question-circle me-1"></i> Not Found
+                      </span>`;
+        break;
+      case 'Price Format Error':
+        statusBadge = `<span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Error
+                      </span>`;
+        break;
+      default:
+        statusBadge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary px-3 py-2">
+                        <i class="fas fa-info-circle me-1"></i> ${item.status}
+                      </span>`;
+    }
+    
     html += `
-      <tr>
-        <td><strong>${item.model}</strong></td>
-        <td>${descOutput}</td>
-        <td>$${parseFloat(item.po_price).toFixed(2)}</td>
-        <td>${item.book_price ? '$' + parseFloat(item.book_price).toFixed(2) : '-'}</td>
-        <td class="${priceCompareClass}"><strong>${priceDifference}</strong></td>
-        <td class="${statusClass}"><strong>${item.status}</strong></td>
+      <tr class="border-bottom">
+        <td class="px-4 py-3 align-middle">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-barcode me-2 text-muted"></i>
+            <strong>${item.model}</strong>
+          </div>
+        </td>
+        <td class="px-4 py-3 align-middle text-muted small">${descOutput}</td>
+        <td class="px-4 py-3 align-middle text-end">$${parseFloat(item.po_price).toFixed(2)}</td>
+        <td class="px-4 py-3 align-middle text-end">${item.book_price ? '$' + parseFloat(item.book_price).toFixed(2) : '-'}</td>
+        <td class="px-4 py-3 align-middle text-end ${priceCompareClass}">
+          <strong>${priceDifference}</strong>
+        </td>
+        <td class="px-4 py-3 align-middle text-center">
+          ${statusBadge}
+        </td>
       </tr>
     `;
   });
@@ -218,18 +325,36 @@ function displayResults(data) {
         </div>
       </div>
     
-    <!-- Email report section (now below the summary) -->
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-envelope"></i> Email Report</h5>
-        <button class="btn btn-sm btn-outline-success" id="copy-btn">
-          <i class="fas fa-copy"></i> Copy to Clipboard
-        </button>
+    <!-- Email report section -->
+    <div class="card border-0 rounded-4 overflow-hidden shadow-sm">
+      <div class="card-header border-0 bg-white py-3 px-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+              style="background-color: var(--light-green); width: 32px; height: 32px;">
+              <i class="fas fa-envelope" style="color: var(--primary-green);"></i>
+            </div>
+            <h6 class="fw-semibold mb-0">Email Report</h6>
+          </div>
+          
+          <button class="btn btn-primary btn-sm px-3 py-2 d-flex align-items-center" id="copy-btn">
+            <i class="fas fa-copy me-2"></i> Copy to Clipboard
+          </button>
+        </div>
       </div>
-      <div class="card-body">
-        <textarea class="form-control font-monospace" id="email-report" rows="12" readonly>${data.email_report}</textarea>
-        <div class="form-text text-muted mt-2">
-          <i class="fas fa-info-circle"></i> Copy this report to send to your team or customer service.
+      
+      <div class="card-body p-4">
+        <div class="bg-light rounded-3 p-2 mb-3">
+          <textarea class="form-control border-0 shadow-none bg-light font-monospace" 
+                    id="email-report" rows="10" readonly 
+                    style="resize: none;">${data.email_report}</textarea>
+        </div>
+        
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 d-flex me-3">
+            <i class="fas fa-info-circle text-muted"></i>
+          </div>
+          <span class="small text-muted">This report can be shared with your team or customer service department.</span>
         </div>
       </div>
     </div>
@@ -238,16 +363,18 @@ function displayResults(data) {
   // Add the HTML to the container
   container.innerHTML = html;
   
-  // Re-initialize the copy button event listener (since we recreated the DOM element)
-  const copyButton = document.getElementById('copy-btn');
-  if (copyButton) {
-    copyButton.addEventListener('click', function() {
-      const textarea = document.getElementById('email-report');
-      if (textarea) {
-        textarea.select();
-        document.execCommand('copy');
-        showToast('Email report copied to clipboard', 'success');
-      }
-    });
-  }
+  // Add the event listener after a short delay to ensure DOM is ready
+  setTimeout(() => {
+    const copyButton = document.getElementById('copy-btn');
+    if (copyButton) {
+      copyButton.addEventListener('click', function() {
+        const textarea = document.getElementById('email-report');
+        if (textarea) {
+          textarea.select();
+          document.execCommand('copy');
+          showToast('Email report copied to clipboard', 'success');
+        }
+      });
+    }
+  }, 100);
 }
