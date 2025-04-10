@@ -37,19 +37,8 @@
                     
                     <div class="mb-4">
                         <label for="po-file" class="form-label mb-2">Purchase Order PDF</label>
-                        <div class="drop-zone rounded-3 p-5 text-center bg-light position-relative mb-2">
-                            <input type="file" class="form-control visually-hidden position-absolute inset-0 w-100 h-100 cursor-pointer opacity-0" 
-                                   id="po-file" accept=".pdf" required>
-                            <div class="mb-3">
-                                <i class="fas fa-file-pdf fa-2x mb-3" style="color: var(--primary-green);"></i>
-                                <h6 class="mb-1">Drop your PDF file here</h6>
-                                <p class="mb-0 small text-muted">or click to browse files</p>
-                            </div>
-                        </div>
-                        <div id="file-selected" class="d-none alert alert-light d-flex align-items-center">
-                            <i class="fas fa-file-pdf me-2" style="color: var(--primary-green);"></i>
-                            <span id="file-name">No file selected</span>
-                        </div>
+                        <input type="file" class="form-control" id="po-file" accept=".pdf" required>
+                        <div class="form-text">Upload the customer's Purchase Order in PDF format</div>
                     </div>
                     
                     <div class="d-grid mt-4">
@@ -170,17 +159,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Show file name when selected
         const fileInput = document.getElementById('po-file');
-        const fileSelected = document.getElementById('file-selected');
-        const fileName = document.getElementById('file-name');
-        
-        fileInput.addEventListener('change', function() {
-            if (fileInput.files.length > 0) {
-                fileName.textContent = fileInput.files[0].name;
-                fileSelected.classList.remove('d-none');
-            } else {
-                fileSelected.classList.add('d-none');
-            }
-        });
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                // Just a simple file selection handler
+                console.log("File selected:", fileInput.files[0]?.name || "No file");
+            });
+        }
     });
 </script>
 {% endblock %}

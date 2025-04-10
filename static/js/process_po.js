@@ -81,16 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Set up copy to clipboard button
-  const copyBtn = document.getElementById('copy-btn');
-  copyBtn.addEventListener('click', function() {
-    const textarea = document.getElementById('email-report');
-    if (textarea) {
-      textarea.select();
-      document.execCommand('copy');
-      showToast('Email report copied to clipboard', 'success');
-    }
-  });
+  // We'll handle the copy button in the displayResults function instead
+  // since it's dynamically created
 });
 
 /**
