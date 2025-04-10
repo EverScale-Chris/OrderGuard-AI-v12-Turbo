@@ -39,16 +39,21 @@ def extract_data_from_pdf(pdf_path):
         Format the output as a JSON array of objects, where each object represents a line item with:
         - "model": the exact item number/model number/SKU as written
         - "price": the price as a number (without currency symbols)
+        - "description": the full description text if available (this can help with matching)
         
         Example output:
         [
-            {"model": "ABC123", "price": "299.99"},
-            {"model": "XYZ456", "price": "149.50"}
+            {"model": "ABC123", "price": "299.99", "description": "Widget Type A Blue 12-pack"},
+            {"model": "XYZ456", "price": "149.50", "description": "Premium Service Kit (RED-789)"}
         ]
         
-        For model/item numbers:
+        IMPORTANT: For model/item numbers:
+        - Pay special attention to the Description column, as it may contain the actual item number needed for matching
+        - Look for text patterns like: "Item: ABC123", "Model #ABC123", "Part ABC123", "SKU ABC123", "part number ABC123" within descriptions
+        - Look for alphanumeric codes that appear in a standardized format (like AB-1234, 123ABC, etc.)
+        - Look for codes that are in all caps or have a mix of letters and numbers
         - Look for columns or fields labeled: Item Number, Model, SKU, Part #, Description, Product ID
-        - If you find more than one number in a line item, choose the one most likely to be a product identifier
+        - If you find more than one potential product identifier, extract the most likely one based on format
         
         For prices:
         - Look for columns or fields labeled: Unit Price, Price, Base Price, Amount, Extended Price, Each, EA Price

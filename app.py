@@ -242,6 +242,7 @@ def process_purchase_order():
 def compare_with_price_book(extracted_data, price_book):
     results = []
     price_data = price_book['data']
+    price_book_model_numbers = set(price_data.keys())
     
     for item in extracted_data:
         result = {
@@ -250,22 +251,49 @@ def compare_with_price_book(extracted_data, price_book):
             "status": "Data Extraction Issue"
         }
         
-        # Skip if we couldn't extract the model or price
-        if "model" not in item or "price" not in item:
+        # Include description if available
+        if "description" in item:
+            result["description"] = item["description"]
+        
+        # Skip if we couldn't extract the price
+        if "price" not in item:
             results.append(result)
             continue
         
-        # Check if model exists in price book
-        if item["model"] in price_data:
-            book_price = price_data[item["model"]]
+        # First try direct match with model number
+        matched_model = None
+        
+        if "model" in item and item["model"] in price_data:
+            matched_model = item["model"]
+        else:
+            # If no direct match, try to find model number in description
+            if "description" in item and item["description"]:
+                description = item["description"]
+                
+                # Try to find any price book model number within the description
+                for model_number in price_book_model_numbers:
+                    if model_number in description:
+                        matched_model = model_number
+                        # Update the model in the result to the matched one from description
+                        result["model"] = model_number
+                        logging.info(f"Found model {model_number} in description: {description}")
+                        break
+        
+        # If we found a match, compare prices
+        if matched_model:
+            book_price = price_data[matched_model]
             result["book_price"] = book_price
             
             # Compare prices
-            if float(item["price"]) == float(book_price):
-                result["status"] = "Match"
-            else:
-                result["status"] = "Mismatch"
-                result["discrepancy"] = abs(float(item["price"]) - float(book_price))
+            try:
+                if float(item["price"]) == float(book_price):
+                    result["status"] = "Match"
+                else:
+                    result["status"] = "Mismatch"
+                    result["discrepancy"] = abs(float(item["price"]) - float(book_price))
+            except (ValueError, TypeError):
+                # Handle case where price might not be convertible to float
+                result["status"] = "Price Format Error"
         else:
             result["status"] = "Model Not Found"
         
@@ -284,6 +312,10 @@ Thank you for your Purchase Order. We have reviewed it against our "{price_book_
     
     for item in comparison_results:
         email_text += f"*   **Line Item:** {item['model']}\n"
+        # Include description if available
+        if 'description' in item and item['description']:
+            email_text += f"    *   **Description:** {item['description']}\n"
+        
         email_text += f"    *   **PO Price:** ${item['po_price']}\n"
         
         if item['status'] == "Match":
@@ -292,6 +324,8 @@ Thank you for your Purchase Order. We have reviewed it against our "{price_book_
             email_text += f"    *   **Status:** Mismatch - Price Book price is ${item['book_price']}. Discrepancy: ${item['discrepancy']:.2f}.\n"
         elif item['status'] == "Model Not Found":
             email_text += f"    *   **Status:** Model Not Found in Selected Price Book. Please verify the model number.\n"
+        elif item['status'] == "Price Format Error":
+            email_text += f"    *   **Status:** Price Format Error - Could not compare prices. Price Book price is ${item['book_price']}.\n"
         else:
             email_text += f"    *   **Status:** Data Extraction Issue from PO Line Item. Manual review required.\n"
     

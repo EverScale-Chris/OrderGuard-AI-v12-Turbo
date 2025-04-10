@@ -151,6 +151,7 @@ function displayResults(data) {
         <thead>
           <tr>
             <th>Model</th>
+            <th>Description</th>
             <th>PO Price</th>
             <th>Book Price</th>
             <th>Status</th>
@@ -171,13 +172,23 @@ function displayResults(data) {
       case 'Model Not Found':
         statusClass = 'text-warning';
         break;
+      case 'Price Format Error':
+        statusClass = 'text-danger';
+        break;
       default:
         statusClass = 'text-muted';
     }
     
+    // Truncate description if it's too long (more than 50 chars)
+    const description = item.description || '';
+    const truncatedDesc = description.length > 50 
+      ? description.substring(0, 47) + '...' 
+      : description;
+    
     html += `
       <tr>
         <td>${item.model}</td>
+        <td title="${description}">${truncatedDesc}</td>
         <td>$${item.po_price}</td>
         <td>${item.book_price ? '$' + item.book_price : '-'}</td>
         <td class="${statusClass}">${item.status}</td>
