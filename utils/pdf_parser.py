@@ -21,7 +21,8 @@ def extract_data_from_pdf(pdf_path):
         
         # Configure Gemini API
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro-vision')
+        # Use Gemini 2.0 flash model
+        model = genai.GenerativeModel('models/gemini-flash')
         
         # Read the PDF file and encode it as base64
         with open(pdf_path, 'rb') as f:
@@ -32,11 +33,11 @@ def extract_data_from_pdf(pdf_path):
         # Create prompt for Gemini API
         prompt = """
         Extract the following information from this Purchase Order PDF:
-        - Model Number/SKU for each line item
-        - Price listed on the PO for each line item
+        - Item Number/Model Number/SKU/Part Number for each line item (look for any identifier that would match a product code)
+        - Price listed on the PO for each line item (look for any of these: Unit Price, Base Price, Price, Extended Price)
         
         Format the output as a JSON array of objects, where each object represents a line item with:
-        - "model": the exact model number/SKU as written
+        - "model": the exact item number/model number/SKU as written
         - "price": the price as a number (without currency symbols)
         
         Example output:
@@ -44,6 +45,14 @@ def extract_data_from_pdf(pdf_path):
             {"model": "ABC123", "price": "299.99"},
             {"model": "XYZ456", "price": "149.50"}
         ]
+        
+        For model/item numbers:
+        - Look for columns or fields labeled: Item Number, Model, SKU, Part #, Description, Product ID
+        - If you find more than one number in a line item, choose the one most likely to be a product identifier
+        
+        For prices:
+        - Look for columns or fields labeled: Unit Price, Price, Base Price, Amount, Extended Price, Each, EA Price
+        - If there are multiple prices, choose the one that represents the per-unit price, not the extended/total price
         
         Only include items where you can clearly identify both the model number and price. If there's ambiguity or you can't extract the data reliably, note it in the results.
         Do not guess or infer any information that is not explicitly present in the document.
