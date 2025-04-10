@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Price Book Management</h1>
+<p class="lead">Upload and manage your internal price books for comparing Purchase Orders.</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-upload"></i> Upload New Price Book</h5>
+            </div>
+            <div class="card-body">
+                <form id="upload-pricebook-form">
+                    <div class="mb-3">
+                        <label for="pricebook-name" class="form-label">Price Book Name</label>
+                        <input type="text" class="form-control" id="pricebook-name" required placeholder="e.g., Q4 2024 Standard">
+                        <div class="form-text">Give your price book a descriptive name</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pricebook-file" class="form-label">Excel File (.xlsx)</label>
+                        <input type="file" class="form-control" id="pricebook-file" accept=".xlsx" required>
+                        <div class="form-text">File must contain "Model Number" and "Correct Base Price" columns</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" id="upload-btn">
+                            <span class="spinner-border spinner-border-sm d-none" id="upload-spinner" role="status" aria-hidden="true"></span>
+                            Upload Price Book
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Available Price Books</h5>
+            </div>
+            <div class="card-body">
+                <div id="pricebook-list-container">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert for messages -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="toast-container"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pricebooks.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,71 @@
+/* Custom styles beyond Bootstrap */
+
+/* Sticky footer */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Card hover effect */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Button hover effects */
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Textarea styles */
+#email-report {
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+}
+
+/* Status color indicators for results table */
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Custom form styling */
+.form-control:focus, .form-select:focus {
+    border-color: #495057;
+    box-shadow: 0 0 0 0.25rem rgba(130, 138, 145, 0.25);
+}
+
+/* Animation for loading spinner */
+@keyframes spinner-grow {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: none;
+    }
+}

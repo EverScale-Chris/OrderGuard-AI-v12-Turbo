@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="jumbotron bg-dark p-5 rounded">
+    <h1 class="display-4">Purchase Order Verification System</h1>
+    <p class="lead">Streamline the process of verifying customer Purchase Orders against internal price books.</p>
+    <hr class="my-4">
+    <p>This system allows you to verify pricing in customer Purchase Orders against your internal price books, ensuring accuracy and efficiency in your order processing workflow.</p>
+    <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-file-invoice"></i> Process Purchase Orders</h5>
+                    <p class="card-text">Upload a customer Purchase Order PDF and compare it against your price books to verify pricing accuracy.</p>
+                    <a href="/process-po" class="btn btn-primary">Process PO</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-book"></i> Manage Price Books</h5>
+                    <p class="card-text">Upload, view, and manage your internal price books for comparison against customer Purchase Orders.</p>
+                    <a href="/pricebooks" class="btn btn-secondary">Manage Price Books</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
