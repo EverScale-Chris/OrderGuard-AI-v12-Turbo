@@ -215,11 +215,11 @@ function displayResults(data) {
             <thead style="background-color: var(--app-gray);">
               <tr>
                 <th class="px-4 py-3 text-nowrap">Model Number</th>
-                <th class="px-4 py-3">Notes</th>
+                <th class="px-4 py-3">Status</th>
                 <th class="px-4 py-3 text-end">PO Price</th>
                 <th class="px-4 py-3 text-end">Book Price</th>
                 <th class="px-4 py-3 text-end">Difference</th>
-                <th class="px-4 py-3 text-center">Status</th>
+                <th class="px-4 py-3 text-center">Price Book Row</th>
               </tr>
             </thead>
             <tbody>
@@ -296,6 +296,9 @@ function displayResults(data) {
                       </span>`;
     }
     
+    // Use the row number from the backend or display n/a if not found
+    const rowNumber = item.row_number || 'n/a';
+    
     html += `
       <tr class="border-bottom">
         <td class="px-4 py-3 align-middle">
@@ -304,14 +307,16 @@ function displayResults(data) {
             <strong>${item.model}</strong>
           </div>
         </td>
-        <td class="px-4 py-3 align-middle text-muted small">${descOutput}</td>
+        <td class="px-4 py-3 align-middle">
+          ${statusBadge}
+        </td>
         <td class="px-4 py-3 align-middle text-end">$${parseFloat(item.po_price).toFixed(2)}</td>
         <td class="px-4 py-3 align-middle text-end">${item.book_price ? '$' + parseFloat(item.book_price).toFixed(2) : '-'}</td>
         <td class="px-4 py-3 align-middle text-end ${priceCompareClass}">
           <strong>${priceDifference}</strong>
         </td>
         <td class="px-4 py-3 align-middle text-center">
-          ${statusBadge}
+          <span class="badge bg-light text-dark">${rowNumber}</span>
         </td>
       </tr>
     `;

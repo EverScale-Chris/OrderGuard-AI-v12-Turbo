@@ -248,6 +248,18 @@ def compare_with_price_book(extracted_data, price_book):
     results = []
     price_data = price_book['data']
     price_book_model_numbers = set(price_data.keys())
+    price_book_id = price_book['id']
+    
+    # Get all price items for this price book with their IDs to use as row numbers
+    price_items = PriceItem.query.filter_by(price_book_id=price_book_id).all()
+    
+    # Create a dictionary to lookup both price and row number (using the DB ID as row number)
+    price_items_dict = {}
+    for item in price_items:
+        price_items_dict[item.model_number] = {
+            "price": item.price,
+            "row_number": item.id  # Using database ID as row reference
+        }
     
     for item in extracted_data:
         # Ensure there's always a valid model number (never null)
@@ -258,7 +270,8 @@ def compare_with_price_book(extracted_data, price_book):
         result = {
             "model": model_number,
             "po_price": item.get("price", "Extraction Issue"),
-            "status": "Data Extraction Issue"
+            "status": "Data Extraction Issue",
+            "row_number": None  # Initialize row number to None
         }
         
         # Include description if available
@@ -273,7 +286,7 @@ def compare_with_price_book(extracted_data, price_book):
         # First try direct match with model number
         matched_model = None
         
-        if "model" in item and item["model"] in price_data:
+        if "model" in item and item["model"] in price_items_dict:
             matched_model = item["model"]
         else:
             # If no direct match, try to find model number in description
@@ -291,8 +304,10 @@ def compare_with_price_book(extracted_data, price_book):
         
         # If we found a match, compare prices
         if matched_model:
-            book_price = price_data[matched_model]
+            item_data = price_items_dict[matched_model]
+            book_price = item_data["price"]
             result["book_price"] = book_price
+            result["row_number"] = item_data["row_number"]
             
             # Compare prices
             try:
