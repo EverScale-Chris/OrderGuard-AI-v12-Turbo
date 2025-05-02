@@ -220,12 +220,31 @@
                     <li class="nav-item mx-1">
                         <a class="nav-link {{ 'active' if request.path == '/' }}" href="/"><i class="fas fa-home me-1"></i> Home</a>
                     </li>
+                    {% if current_user.is_authenticated %}
                     <li class="nav-item mx-1">
                         <a class="nav-link {{ 'active' if request.path == '/process-po' }}" href="/process-po"><i class="fas fa-file-invoice me-1"></i> Process PO</a>
                     </li>
                     <li class="nav-item mx-1">
                         <a class="nav-link {{ 'active' if request.path == '/pricebooks' }}" href="/pricebooks"><i class="fas fa-book me-1"></i> Price Books</a>
                     </li>
+                    <li class="nav-item dropdown mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-1"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-1"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item mx-1">
+                        <a class="nav-link {{ 'active' if request.path == '/login' }}" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt me-1"></i> Login</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link {{ 'active' if request.path == '/register' }}" href="{{ url_for('register') }}"><i class="fas fa-user-plus me-1"></i> Register</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -233,6 +252,16 @@
     
     <div class="container" style="margin-top: 100px;">
         <div class="content-animation">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
             {% block content %}{% endblock %}
         </div>
     </div>

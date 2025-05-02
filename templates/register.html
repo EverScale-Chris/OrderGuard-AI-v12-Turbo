@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Register Account</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('register') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
+                        {% for error in form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="Enter your email") }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Choose a secure password") }}
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.password2.label(class="form-label") }}
+                        {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else ""), placeholder="Repeat your password") }}
+                        {% for error in form.password2.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3">
+                <div class="small">
+                    <a href="{{ url_for('login') }}">Already have an account? Login!</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
