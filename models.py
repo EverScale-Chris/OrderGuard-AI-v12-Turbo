@@ -1,15 +1,46 @@
 from app import db
 import datetime
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+class User(UserMixin, db.Model):
+    """User model for authentication and row-level security"""
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
+    # Define relationships
+    price_books = db.relationship('PriceBook', backref='owner', lazy='dynamic')
+    processed_pos = db.relationship('ProcessedPO', backref='owner', lazy='dynamic')
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+        
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+    
+    def __repr__(self):
+        return f'<User {self.username}>'
 
 class PriceBook(db.Model):
     """Model for price books"""
     id = db.Column(db.String(36), primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     # Define relationship with PriceItem
     items = db.relationship('PriceItem', backref='price_book', cascade='all, delete-orphan')
+    
+    # We create a composite unique constraint instead of just on name
+    # This allows different users to have price books with the same name
+    __table_args__ = (
+        db.UniqueConstraint('name', 'user_id', name='_user_pricebook_uc'),
+    )
     
     def __repr__(self):
         return f'<PriceBook {self.name}>'
@@ -37,6 +68,7 @@ class ProcessedPO(db.Model):
     filename = db.Column(db.String(255), nullable=False)
     price_book_id = db.Column(db.String(36), db.ForeignKey('price_book.id'), nullable=False)
     processed_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     # Define relationship with PriceBook
     price_book = db.relationship('PriceBook')

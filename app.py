@@ -7,11 +7,15 @@ import re
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
+from flask import Flask, render_template, request, jsonify, flash, redirect, url_for, session, g
 from werkzeug.utils import secure_filename
 import tempfile
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from flask_login import LoginManager, login_required, current_user, login_user, logout_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 
 # Define base model class
 class Base(DeclarativeBase):
@@ -34,8 +38,17 @@ db.init_app(app)
 
 # Import models after initializing db to avoid circular imports
 with app.app_context():
-    from models import PriceBook, PriceItem, ProcessedPO, POLineItem
+    from models import User, PriceBook, PriceItem, ProcessedPO, POLineItem
     db.create_all()
+
+# Configure Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Import Excel parser and PDF parser
 from utils.excel_parser import parse_excel_file
@@ -51,24 +64,88 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
+# Authentication Forms
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember_me = BooleanField('Remember Me')
+    submit = SubmitField('Sign In')
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+    
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+            
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email address.')
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid email or password', 'danger')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_for('login') in next_page:
+            next_page = url_for('index')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
 @app.route('/pricebooks')
+@login_required
 def pricebooks():
     return render_template('pricebooks.html')
 
 @app.route('/process-po')
+@login_required
 def process_po():
     return render_template('process_po.html')
 
 @app.route('/api/pricebooks', methods=['GET'])
+@login_required
 def get_price_books():
     try:
-        # Get all price books from PostgreSQL instead of Replit DB
+        # Get price books for the current user
         price_books = []
-        all_price_books = PriceBook.query.order_by(PriceBook.name).all()
+        # Apply row-level security - only show price books owned by the current user
+        all_price_books = PriceBook.query.filter_by(user_id=current_user.id).order_by(PriceBook.name).all()
         
         for book in all_price_books:
             price_books.append({
@@ -83,6 +160,7 @@ def get_price_books():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/pricebooks', methods=['POST'])
+@login_required
 def upload_price_book():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
@@ -105,8 +183,8 @@ def upload_price_book():
             # Parse the Excel file
             price_data = parse_excel_file(filepath)
             
-            # Check if price book with the same name already exists
-            existing_book = PriceBook.query.filter_by(name=pricebook_name).first()
+            # Check if price book with the same name already exists for this user
+            existing_book = PriceBook.query.filter_by(name=pricebook_name, user_id=current_user.id).first()
             if existing_book:
                 os.remove(filepath)  # Clean up the temp file
                 return jsonify({"error": f"Price book '{pricebook_name}' already exists"}), 400
@@ -121,8 +199,8 @@ def upload_price_book():
             items_sample = list(price_data.items())[:5] if price_data else []
             logging.debug(f"Sample items: {items_sample}")
             
-            # Create new price book
-            new_price_book = PriceBook(id=pricebook_id, name=pricebook_name)
+            # Create new price book with the current user's ID
+            new_price_book = PriceBook(id=pricebook_id, name=pricebook_name, user_id=current_user.id)
             logging.debug(f"Created price book object: {new_price_book}")
             
             # Add price items
@@ -156,6 +234,7 @@ def upload_price_book():
     return jsonify({"error": "Invalid file type. Please upload an .xlsx file"}), 400
 
 @app.route('/api/process-po', methods=['POST'])
+@login_required
 def process_purchase_order():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
@@ -180,6 +259,11 @@ def process_purchase_order():
             if not price_book:
                 os.remove(filepath)  # Clean up
                 return jsonify({"error": "Selected price book not found"}), 404
+                
+            # Check if the price book belongs to the current user
+            if price_book.user_id != current_user.id:
+                os.remove(filepath)  # Clean up
+                return jsonify({"error": "You don't have permission to access this price book"}), 403
             
             # Extract data from PDF using Gemini API
             extracted_data = extract_data_from_pdf(filepath)
@@ -203,10 +287,11 @@ def process_purchase_order():
             # Generate email report with the filename to extract PO number
             email_report = generate_email_report(comparison_results, price_book.name, filename)
             
-            # Save processed PO to database
+            # Save processed PO to database with current user's ID
             new_po = ProcessedPO(
                 filename=filename,
-                price_book_id=price_book_id
+                price_book_id=price_book_id,
+                user_id=current_user.id
             )
             db.session.add(new_po)
             db.session.flush()  # Get the ID without committing
