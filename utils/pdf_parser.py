@@ -85,6 +85,11 @@ def extract_data_from_pdf(pdf_path):
             try:
                 extracted_data = json.loads(json_str)
                 logging.info(f"Successfully extracted {len(extracted_data)} line items from PDF")
+                
+                # Log each extracted line for debugging
+                for i, item in enumerate(extracted_data, 1):
+                    logging.debug(f"PDF Line {i}: model='{item.get('model', 'N/A')}', price='{item.get('price', 'N/A')}', description='{item.get('description', 'N/A')[:100]}...'")
+                
                 return extracted_data
             except json.JSONDecodeError as e:
                 logging.error(f"Error parsing JSON from Gemini API response: {str(e)}")
