@@ -520,20 +520,19 @@ I have reviewed your purchase order ({po_number}). The following discrepancies h
         except (ValueError, TypeError):
             po_price_formatted = f"${item['po_price']}"
             
-        try:
-            book_price = float(item['book_price'])
-            book_price_formatted = f"${book_price:.2f}"
-        except (ValueError, TypeError):
-            book_price_formatted = f"${item['book_price']}"
-            
-        # Include source column information if available
-        source_info = f" (Row {item['price_book_row']})" if item.get('price_book_row') else ""
-        
         # Get the actual PO line number
         po_line = item.get('po_line_number', 'Unknown')
         
         # Format the message based on the status
         if item['status'] == "Mismatch":
+            try:
+                book_price = float(item['book_price'])
+                book_price_formatted = f"${book_price:.2f}"
+            except (ValueError, TypeError):
+                book_price_formatted = f"${item['book_price']}"
+            
+            # Include source column information if available
+            source_info = f" (Row {item['price_book_row']})" if item.get('price_book_row') else ""
             email_text += f"PO Line {po_line} - {item['model']} - PO Price {po_price_formatted} - Price Book {book_price_formatted}{source_info}\n"
         elif item['status'] == "Model Not Found":
             email_text += f"PO Line {po_line} - {item['model']} - Model not found in price book\n"
