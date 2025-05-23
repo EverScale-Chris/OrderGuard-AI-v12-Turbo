@@ -52,7 +52,7 @@ class PriceItem(db.Model):
     model_number = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
     price_book_id = db.Column(db.String(36), db.ForeignKey('price_book.id'), nullable=False)
-    source_column = db.Column(db.String(10), nullable=True)  # Track which column the price came from
+    source_column = db.Column(db.String(100), nullable=True)  # Track which column the price came from
     excel_row = db.Column(db.Integer, nullable=True)  # Track Excel row number
     
     # Create an index on model_number and price_book_id for faster lookups
