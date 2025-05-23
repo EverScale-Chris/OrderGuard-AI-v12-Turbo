@@ -389,32 +389,43 @@ def compare_with_price_book(extracted_data, price_book):
             results.append(result)
             continue
         
-        # First try direct match with model number
+        # Check all potential model numbers found in the line (both primary and in description)
         matched_model = None
+        all_potential_models = []
         
-        if "model" in item and item["model"] in price_items_dict:
-            matched_model = item["model"]
-            logging.info(f"Using direct model match: {matched_model}")
-        else:
-            # If no direct match, try to find model number in description
-            if "description" in item and item["description"]:
-                description = item["description"]
-                
-                # Find ALL potential model numbers in the description first
-                found_models = []
-                for model_number in price_book_model_numbers:
-                    if model_number in description:
-                        found_models.append(model_number)
-                
-                # If we found any models, use the first one that exists in our price book
-                if found_models:
-                    # Check which ones actually exist in our price book and use the first valid one
-                    for model in found_models:
-                        if model in price_items_dict:
-                            matched_model = model
-                            result["model"] = model
-                            logging.info(f"Using matching model {model} from description (found {len(found_models)} total): {description}")
-                            break
+        # Add the primary extracted model
+        if "model" in item and item["model"]:
+            all_potential_models.append(item["model"])
+        
+        # Also search for model numbers in the description using regex
+        if "description" in item and item["description"]:
+            description = item["description"]
+            import re
+            # Find model-like patterns in description
+            model_patterns = re.findall(r'[A-Za-z0-9][-A-Za-z0-9_]{4,}[A-Za-z0-9]', description)
+            all_potential_models.extend(model_patterns)
+            
+            # Also check for known model numbers from price book
+            for model_number in price_book_model_numbers:
+                if model_number in description:
+                    all_potential_models.append(model_number)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_models = []
+        for model in all_potential_models:
+            if model not in seen:
+                seen.add(model)
+                unique_models.append(model)
+        
+        logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
+        
+        # Find the FIRST model that exists in our price book (prioritize matches)
+        for model in unique_models:
+            if model in price_items_dict:
+                matched_model = model
+                logging.info(f"Using matching model {model} from available options: {unique_models}")
+                break
         
         # If we found a match, compare prices
         if matched_model:
