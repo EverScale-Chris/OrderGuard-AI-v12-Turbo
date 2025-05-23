@@ -246,6 +246,28 @@ def upload_price_book():
     
     return jsonify({"error": "Invalid file type. Please upload an .xlsx file"}), 400
 
+@app.route('/api/pricebooks/<price_book_id>', methods=['DELETE'])
+@login_required
+def delete_price_book(price_book_id):
+    try:
+        # Find the price book and verify ownership
+        price_book = PriceBook.query.filter_by(id=price_book_id, user_id=current_user.id).first()
+        if not price_book:
+            return jsonify({"error": "Price book not found"}), 404
+        
+        # Delete all associated price items first
+        PriceItem.query.filter_by(price_book_id=price_book_id).delete()
+        
+        # Delete the price book
+        db.session.delete(price_book)
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": f"Price book '{price_book.name}' deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error deleting price book: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/process-po', methods=['POST'])
 @login_required
 def process_purchase_order():

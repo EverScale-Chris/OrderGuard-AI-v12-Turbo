@@ -146,7 +146,7 @@ function loadPriceBooks() {
               <button class="btn btn-sm btn-outline-success me-2" title="View details" disabled>
                 <i class="fas fa-eye"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" title="Delete price book" disabled>
+              <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete price book" data-id="${book.id}" data-name="${book.name}">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
@@ -161,6 +161,18 @@ function loadPriceBooks() {
       `;
       
       container.innerHTML = html;
+      
+      // Add event listeners for delete buttons
+      document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const bookId = this.getAttribute('data-id');
+          const bookName = this.getAttribute('data-name');
+          
+          if (confirm(`Are you sure you want to delete the price book "${bookName}"? This action cannot be undone.`)) {
+            deletePriceBook(bookId);
+          }
+        });
+      });
     })
     .catch(error => {
       container.innerHTML = `
@@ -170,4 +182,26 @@ function loadPriceBooks() {
       `;
       console.error('Error:', error);
     });
+}
+
+/**
+ * Deletes a price book
+ */
+function deletePriceBook(bookId) {
+  fetch(`/api/pricebooks/${bookId}`, {
+    method: 'DELETE'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      showToast(data.error, 'danger');
+    } else {
+      showToast(data.message, 'success');
+      loadPriceBooks(); // Reload the list
+    }
+  })
+  .catch(error => {
+    showToast('Error deleting price book: ' + error.message, 'danger');
+    console.error('Error:', error);
+  });
 }
