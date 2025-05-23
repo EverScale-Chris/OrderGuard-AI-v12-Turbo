@@ -354,8 +354,11 @@ def upload_price_book():
             new_price_book = PriceBook(id=pricebook_id, name=pricebook_name, user_id=current_user.id)
             logging.debug(f"Created price book object: {new_price_book}")
             
-            # Add price items
+            # Add price items in batches to handle large uploads
             item_count = 0
+            batch_size = 100  # Process in smaller batches
+            items_to_add = []
+            
             for model_number, price_info in price_data.items():
                 try:
                     # Handle new data structure with price, source column, and Excel row
@@ -372,11 +375,25 @@ def upload_price_book():
                         excel_row = None
                     
                     new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id, source_column=source_column, excel_row=excel_row)
-                    db.session.add(new_item)
+                    items_to_add.append(new_item)
                     item_count += 1
+                    
+                    # Process in batches
+                    if len(items_to_add) >= batch_size:
+                        db.session.add_all(items_to_add)
+                        db.session.commit()
+                        logging.debug(f"Committed batch of {len(items_to_add)} items")
+                        items_to_add = []
+                    
                     logging.debug(f"Added item {model_number}: ${price_float:.2f} from Column {source_column}")
                 except Exception as item_error:
                     logging.error(f"Error adding item {model_number}: {str(item_error)}")
+            
+            # Add any remaining items
+            if items_to_add:
+                db.session.add_all(items_to_add)
+                db.session.commit()
+                logging.debug(f"Committed final batch of {len(items_to_add)} items")
             
             logging.debug(f"Added {item_count} price items")
             
