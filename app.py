@@ -355,9 +355,10 @@ def compare_with_price_book(extracted_data, price_book):
     # Create a dictionary to lookup price, Excel row number, and source column
     price_items_dict = {}
     for item in price_items:
+        logging.debug(f"Item {item.model_number}: excel_row={item.excel_row}, source_column={item.source_column}")
         price_items_dict[item.model_number] = {
             "price": item.price,
-            "excel_row": item.excel_row or "Unknown",  # Use actual Excel row number
+            "excel_row": item.excel_row,  # Keep the actual value, don't convert to "Unknown"
             "source_column": item.source_column or "Unknown"  # Include source column info
         }
     
