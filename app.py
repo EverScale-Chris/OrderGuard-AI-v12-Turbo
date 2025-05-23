@@ -138,6 +138,71 @@ def pricebooks():
 def process_po():
     return render_template('process_po.html')
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    try:
+        # Get all processed POs for this user
+        processed_pos = ProcessedPO.query.filter_by(user_id=current_user.id).all()
+        
+        # Calculate overall metrics
+        total_pos = len(processed_pos)
+        total_lines_reviewed = 0
+        total_mismatches = 0
+        total_not_found = 0
+        total_matches = 0
+        total_savings = 0.0
+        
+        po_names = set()  # Track unique PO names
+        
+        for po in processed_pos:
+            po_names.add(po.filename)
+            line_items = POLineItem.query.filter_by(processed_po_id=po.id).all()
+            
+            for item in line_items:
+                total_lines_reviewed += 1
+                
+                if item.status == 'Match':
+                    total_matches += 1
+                elif item.status == 'Mismatch':
+                    total_mismatches += 1
+                    # Calculate savings (when PO price > book price)
+                    if item.book_price and item.po_price > item.book_price:
+                        total_savings += (item.po_price - item.book_price)
+                elif item.status == 'Model Not Found':
+                    total_not_found += 1
+        
+        # Calculate percentages
+        match_percentage = (total_matches / total_lines_reviewed * 100) if total_lines_reviewed > 0 else 0
+        mismatch_percentage = (total_mismatches / total_lines_reviewed * 100) if total_lines_reviewed > 0 else 0
+        not_found_percentage = (total_not_found / total_lines_reviewed * 100) if total_lines_reviewed > 0 else 0
+        
+        # Average savings per PO
+        avg_savings_per_po = total_savings / len(po_names) if po_names else 0
+        
+        # Recent activity (last 10 POs)
+        recent_pos = ProcessedPO.query.filter_by(user_id=current_user.id).order_by(ProcessedPO.processed_at.desc()).limit(10).all()
+        
+        metrics = {
+            'total_pos': len(po_names),  # Unique PO count
+            'total_lines_reviewed': total_lines_reviewed,
+            'total_matches': total_matches,
+            'total_mismatches': total_mismatches,
+            'total_not_found': total_not_found,
+            'total_savings': total_savings,
+            'match_percentage': round(match_percentage, 1),
+            'mismatch_percentage': round(mismatch_percentage, 1),
+            'not_found_percentage': round(not_found_percentage, 1),
+            'avg_savings_per_po': avg_savings_per_po,
+            'recent_pos': recent_pos
+        }
+        
+        return render_template('dashboard.html', metrics=metrics)
+        
+    except Exception as e:
+        logging.error(f"Error loading dashboard: {str(e)}")
+        return render_template('dashboard.html', metrics={}, error="Unable to load dashboard data")
+
 @app.route('/api/pricebooks', methods=['GET'])
 @login_required
 def get_price_books():

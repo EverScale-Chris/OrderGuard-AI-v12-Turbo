@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - OrderGuard AI</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #10b981;
+            --light-green: #ecfdf5;
+            --highlight-green: #f0fdf4;
+            --dark-green: #047857;
+            --app-gray: #f9fafb;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            border: none;
+            transition: transform 0.2s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .metric-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .percentage-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .recent-po-item {
+            border-left: 4px solid var(--primary-green);
+            background-color: var(--highlight-green);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--dark-green);">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-shield-alt me-2"></i>OrderGuard AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="fas fa-home me-1"></i> Home
+                </a>
+                <a class="nav-link" href="{{ url_for('pricebooks') }}">
+                    <i class="fas fa-book me-1"></i> Price Books
+                </a>
+                <a class="nav-link" href="{{ url_for('process_po') }}">
+                    <i class="fas fa-file-pdf me-1"></i> Process PO
+                </a>
+                <a class="nav-link active" href="{{ url_for('dashboard') }}">
+                    <i class="fas fa-chart-bar me-1"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="background-color: var(--light-green); width: 48px; height: 48px;">
+                        <i class="fas fa-chart-bar fa-lg" style="color: var(--primary-green);"></i>
+                    </div>
+                    <div>
+                        <h1 class="mb-0">Purchase Order Analytics Dashboard</h1>
+                        <p class="text-muted mb-0">Track your verification performance and cost savings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if metrics %}
+        <!-- Key Metrics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                        <div class="metric-value">${{ "%.2f"|format(metrics.total_savings) }}</div>
+                        <div class="metric-label">Total Savings</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                        <div class="metric-value">{{ metrics.total_pos }}</div>
+                        <div class="metric-label">Purchase Orders</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list fa-2x mb-2"></i>
+                        <div class="metric-value">{{ metrics.total_lines_reviewed }}</div>
+                        <div class="metric-label">Lines Reviewed</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <div class="metric-value">{{ metrics.total_mismatches }}</div>
+                        <div class="metric-label">Discrepancies Found</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analytics -->
+        <div class="row mb-4">
+            <!-- Match Analysis -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="fas fa-pie-chart me-2" style="color: var(--primary-green);"></i>
+                        <h5 class="mb-0">Verification Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="text-success">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h4>{{ metrics.total_matches }}</h4>
+                                    <small class="text-muted">Matches</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-success percentage-badge">{{ metrics.match_percentage }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-danger">
+                                    <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                    <h4>{{ metrics.total_mismatches }}</h4>
+                                    <small class="text-muted">Mismatches</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-danger percentage-badge">{{ metrics.mismatch_percentage }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-warning">
+                                    <i class="fas fa-question-circle fa-2x mb-2"></i>
+                                    <h4>{{ metrics.total_not_found }}</h4>
+                                    <small class="text-muted">Not Found</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-warning percentage-badge">{{ metrics.not_found_percentage }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if metrics.total_lines_reviewed > 0 %}
+                        <div class="mt-4">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: {{ metrics.match_percentage }}%" 
+                                     title="Matches: {{ metrics.match_percentage }}%"></div>
+                                <div class="progress-bar bg-danger" style="width: {{ metrics.mismatch_percentage }}%" 
+                                     title="Mismatches: {{ metrics.mismatch_percentage }}%"></div>
+                                <div class="progress-bar bg-warning" style="width: {{ metrics.not_found_percentage }}%" 
+                                     title="Not Found: {{ metrics.not_found_percentage }}%"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Savings Summary -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="fas fa-piggy-bank me-2" style="color: var(--primary-green);"></i>
+                        <h5 class="mb-0">Cost Savings Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="d-flex justify-content-between align-items-center p-3 rounded" 
+                                     style="background-color: var(--highlight-green);">
+                                    <div>
+                                        <h6 class="mb-0" style="color: var(--dark-green);">Total Savings</h6>
+                                        <small class="text-muted">Cumulative cost reductions identified</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <h3 class="mb-0 text-success">${{ "%.2f"|format(metrics.total_savings) }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center p-3 rounded" 
+                                     style="background-color: var(--app-gray);">
+                                    <div>
+                                        <h6 class="mb-0">Average per PO</h6>
+                                        <small class="text-muted">Mean savings per purchase order</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <h4 class="mb-0 text-primary">${{ "%.2f"|format(metrics.avg_savings_per_po) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        {% if metrics.recent_pos %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="fas fa-clock me-2" style="color: var(--primary-green);"></i>
+                        <h5 class="mb-0">Recent Purchase Orders</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for po in metrics.recent_pos %}
+                            <div class="col-md-6 mb-3">
+                                <div class="p-3 rounded recent-po-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1" style="color: var(--dark-green);">{{ po.filename }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                {{ po.processed_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            </small>
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-book me-1"></i>
+                                                    Price Book: {{ po.price_book.name }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Processed
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center p-5">
+            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                 style="background-color: var(--light-green); width: 80px; height: 80px;">
+                <i class="fas fa-chart-bar fa-2x" style="color: var(--primary-green);"></i>
+            </div>
+            <h3>No Data Available</h3>
+            <p class="text-muted mb-4">Start processing purchase orders to see your analytics dashboard.</p>
+            <a href="{{ url_for('process_po') }}" class="btn btn-primary">
+                <i class="fas fa-file-pdf me-2"></i>Process Your First PO
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
