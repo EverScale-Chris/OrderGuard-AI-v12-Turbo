@@ -153,10 +153,12 @@ def dashboard():
         total_matches = 0
         total_savings = 0.0
         
-        po_names = set()  # Track unique PO names
+        po_numbers = set()  # Track unique PO numbers
         
         for po in processed_pos:
-            po_names.add(po.filename)
+            # Extract PO number from filename to ensure uniqueness
+            po_number = extract_po_number_from_filename(po.filename)
+            po_numbers.add(po_number)
             line_items = POLineItem.query.filter_by(processed_po_id=po.id).all()
             
             for item in line_items:
@@ -178,13 +180,13 @@ def dashboard():
         not_found_percentage = (total_not_found / total_lines_reviewed * 100) if total_lines_reviewed > 0 else 0
         
         # Average savings per PO
-        avg_savings_per_po = total_savings / len(po_names) if po_names else 0
+        avg_savings_per_po = total_savings / len(po_numbers) if po_numbers else 0
         
         # Recent activity (last 10 POs)
         recent_pos = ProcessedPO.query.filter_by(user_id=current_user.id).order_by(ProcessedPO.processed_at.desc()).limit(10).all()
         
         metrics = {
-            'total_pos': len(po_names),  # Unique PO count
+            'total_pos': len(po_numbers),  # Unique PO count
             'total_lines_reviewed': total_lines_reviewed,
             'total_matches': total_matches,
             'total_mismatches': total_mismatches,
