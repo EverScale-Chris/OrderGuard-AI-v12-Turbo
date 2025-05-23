@@ -358,7 +358,7 @@ def upload_price_book():
             
             # Add price items in batches to handle large uploads (up to 5000+ items)
             item_count = 0
-            batch_size = 10  # Conservative batch size to stay well under database parameter limits
+            batch_size = 50  # Larger batches for faster processing, but still safe
             items_to_add = []
             
             for model_number, price_info in price_data.items():
@@ -387,7 +387,7 @@ def upload_price_book():
                         logging.info(f"Successfully processed batch: {item_count - len(items_to_add) + 1} to {item_count} items")
                         items_to_add = []
                     
-                    logging.debug(f"Added item {model_number}: ${price_float:.2f} from Column {source_column}")
+                    # Skip individual item logging for performance
                 except Exception as item_error:
                     logging.error(f"Error adding item {model_number}: {str(item_error)}")
             
