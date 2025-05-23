@@ -418,6 +418,8 @@ def compare_with_price_book(extracted_data, price_book):
         
         # If we found a match, compare prices
         if matched_model:
+            # Update the result model to show the matched model, not the original extracted model
+            result["model"] = matched_model
             logging.debug(f"PO line {po_line_number}: Found match for '{matched_model}' (original model: '{model_number}')")
             item_data = price_items_dict[matched_model]
             book_price = item_data["price"]
