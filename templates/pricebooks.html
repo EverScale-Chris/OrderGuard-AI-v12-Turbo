@@ -23,16 +23,17 @@
                         <div class="form-text">Give your price book a descriptive name</div>
                     </div>
                     <div class="mb-4">
-                        <label for="pricebook-file" class="form-label fw-medium">Excel File (.xlsx)</label>
-                        <input type="file" class="form-control" id="pricebook-file" accept=".xlsx" required>
+                        <label for="pricebook-file" class="form-label fw-medium">Excel File (.xlsx, .xls)</label>
+                        <input type="file" class="form-control" id="pricebook-file" accept=".xlsx,.xls" required>
                         <div class="form-text mt-2">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="fas fa-info-circle me-2" style="color: var(--primary-green);"></i>
                                 <strong>Required Excel Format:</strong>
                             </div>
                             <ul class="mb-0 small">
-                                <li>"Item Number" - The product model/SKU</li>
-                                <li>"Base Price" - The price in numeric format</li>
+                                <li><strong>Column A:</strong> Item Numbers/SKUs</li>
+                                <li><strong>Column D:</strong> Primary prices (checked first)</li>
+                                <li><strong>Column E:</strong> Secondary prices (fallback)</li>
                             </ul>
                         </div>
                     </div>
@@ -60,28 +61,40 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p>Your Excel file must have the following structure:</p>
+                        <p>Your Excel file must use specific column positions:</p>
                         
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped">
                                 <thead style="background-color: var(--highlight-green);">
                                     <tr>
-                                        <th>Item Number</th>
-                                        <th>Base Price</th>
+                                        <th>Column A</th>
+                                        <th>Column B</th>
+                                        <th>Column C</th>
+                                        <th>Column D</th>
+                                        <th>Column E</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>ABC123</td>
-                                        <td>299.99</td>
+                                        <td><strong>ABC123</strong></td>
+                                        <td>Description</td>
+                                        <td>Category</td>
+                                        <td><strong>299.99</strong></td>
+                                        <td>349.99</td>
                                     </tr>
                                     <tr>
-                                        <td>XYZ456</td>
-                                        <td>149.50</td>
+                                        <td><strong>XYZ456</strong></td>
+                                        <td>Product Name</td>
+                                        <td>Electronics</td>
+                                        <td><strong>149.50</strong></td>
+                                        <td>179.50</td>
                                     </tr>
                                     <tr>
-                                        <td>PROD789</td>
-                                        <td>199.00</td>
+                                        <td><strong>PROD789</strong></td>
+                                        <td>Item Details</td>
+                                        <td>Hardware</td>
+                                        <td></td>
+                                        <td><strong>199.00</strong></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -90,10 +103,12 @@
                         <div class="alert alert-warning mt-3">
                             <h6><i class="fas fa-exclamation-triangle me-2"></i> Important:</h6>
                             <ul class="mb-0">
-                                <li>Column headers must match <strong>exactly</strong> as shown above</li>
-                                <li>Item Number is the product SKU/identifier</li>
-                                <li>Base Price should be a number (no currency symbols)</li>
-                                <li>Save the file in .xlsx format</li>
+                                <li><strong>Column A:</strong> Item Numbers/SKUs (required)</li>
+                                <li><strong>Column D:</strong> Primary prices (checked first)</li>
+                                <li><strong>Column E:</strong> Secondary prices (used if Column D is empty)</li>
+                                <li>Columns B and C can contain any data</li>
+                                <li>Prices should be numbers (no currency symbols)</li>
+                                <li>Save the file in .xlsx or .xls format</li>
                             </ul>
                         </div>
                     </div>
