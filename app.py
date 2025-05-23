@@ -418,14 +418,25 @@ def compare_with_price_book(extracted_data, price_book):
                 seen.add(model)
                 unique_models.append(model)
         
+        # Special detailed logging for line 2 to debug the specific issue
+        if po_line_number == 2:
+            logging.error(f"LINE 2 DEBUG - Raw item data: {item}")
+            logging.error(f"LINE 2 DEBUG - All potential models: {unique_models}")
+            logging.error(f"LINE 2 DEBUG - Price book contains these models: {list(price_items_dict.keys())[:10]}...")  # Show first 10
+        
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
         # Find the FIRST model that exists in our price book (prioritize matches)
         for model in unique_models:
             if model in price_items_dict:
                 matched_model = model
+                if po_line_number == 2:
+                    logging.error(f"LINE 2 DEBUG - FOUND MATCH: {model}")
                 logging.info(f"Using matching model {model} from available options: {unique_models}")
                 break
+        
+        if po_line_number == 2 and not matched_model:
+            logging.error(f"LINE 2 DEBUG - NO MATCH FOUND from {unique_models}")
         
         # If we found a match, compare prices
         if matched_model:
