@@ -211,12 +211,14 @@ def upload_price_book():
                     if isinstance(price_info, dict):
                         price_float = float(price_info["price"])
                         source_column = price_info["source_column"]
-                        excel_row = price_info.get("excel_row", "Unknown")
+                        excel_row = price_info.get("excel_row")  # Keep as integer, not string
+                        if excel_row == "Unknown":
+                            excel_row = None
                     else:
                         # Fallback for old format
                         price_float = float(price_info)
                         source_column = "Unknown"
-                        excel_row = "Unknown"
+                        excel_row = None
                     
                     new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id, source_column=source_column, excel_row=excel_row)
                     db.session.add(new_item)
