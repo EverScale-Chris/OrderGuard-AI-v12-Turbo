@@ -509,11 +509,11 @@ I have reviewed your purchase order ({po_number}). The following discrepancies h
 
 """
     
-    # Get only the mismatched items
-    mismatched_items = [item for item in comparison_results if item['status'] == "Mismatch"]
+    # Get all items with issues (mismatches and model not found)
+    problem_items = [item for item in comparison_results if item['status'] in ["Mismatch", "Model Not Found"]]
     
-    # Add a line number counter
-    for i, item in enumerate(mismatched_items, 1):
+    # Use actual PO line numbers, not a counter
+    for item in problem_items:
         try:
             po_price = float(item['po_price'])
             po_price_formatted = f"${po_price:.2f}"
@@ -527,11 +527,19 @@ I have reviewed your purchase order ({po_number}). The following discrepancies h
             book_price_formatted = f"${item['book_price']}"
             
         # Include source column information if available
-        source_info = f" (Column {item['source_column']})" if item.get('source_column') else ""
-        email_text += f"Line Item {i} - {item['model']} - PO Price {po_price_formatted} - Price Book {book_price_formatted}{source_info}\n"
+        source_info = f" (Row {item['price_book_row']})" if item.get('price_book_row') else ""
+        
+        # Get the actual PO line number
+        po_line = item.get('po_line_number', 'Unknown')
+        
+        # Format the message based on the status
+        if item['status'] == "Mismatch":
+            email_text += f"PO Line {po_line} - {item['model']} - PO Price {po_price_formatted} - Price Book {book_price_formatted}{source_info}\n"
+        elif item['status'] == "Model Not Found":
+            email_text += f"PO Line {po_line} - {item['model']} - Model not found in price book\n"
     
-    # If there are no mismatched items
-    if not mismatched_items:
+    # If there are no problem items
+    if not problem_items:
         email_text += "No price discrepancies found. All prices match our records.\n"
     
     email_text += """
