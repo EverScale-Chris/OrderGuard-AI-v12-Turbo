@@ -28,12 +28,12 @@
                         <div class="form-text mt-2">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="fas fa-info-circle me-2" style="color: var(--primary-green);"></i>
-                                <strong>Required Excel Format:</strong>
+                                <strong>Smart Excel Format:</strong>
                             </div>
                             <ul class="mb-0 small">
                                 <li><strong>Column A:</strong> Item Numbers/SKUs</li>
-                                <li><strong>Column D:</strong> Primary prices (checked first)</li>
-                                <li><strong>Column E:</strong> Secondary prices (fallback)</li>
+                                <li><strong>Any column:</strong> Your actual column headers are automatically detected</li>
+                                <li><strong>Flexible pricing:</strong> System finds prices in any column with price data</li>
                             </ul>
                         </div>
                     </div>
@@ -100,13 +100,13 @@
                             </table>
                         </div>
                         
-                        <div class="alert alert-warning mt-3">
-                            <h6><i class="fas fa-exclamation-triangle me-2"></i> Important:</h6>
+                        <div class="alert alert-success mt-3">
+                            <h6><i class="fas fa-magic me-2"></i> Smart Format Detection:</h6>
                             <ul class="mb-0">
                                 <li><strong>Column A:</strong> Item Numbers/SKUs (required)</li>
-                                <li><strong>Column D:</strong> Primary prices (checked first)</li>
-                                <li><strong>Column E:</strong> Secondary prices (used if Column D is empty)</li>
-                                <li>Columns B and C can contain any data</li>
+                                <li><strong>Any other columns:</strong> Your actual column headers are automatically detected</li>
+                                <li><strong>Flexible pricing:</strong> System intelligently finds price data in any column</li>
+                                <li><strong>Large files supported:</strong> Handles thousands of items efficiently</li>
                                 <li>Prices should be numbers (no currency symbols)</li>
                                 <li>Save the file in .xlsx or .xls format</li>
                             </ul>
