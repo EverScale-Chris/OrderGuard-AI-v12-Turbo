@@ -65,13 +65,15 @@ def parse_excel_file(filepath):
                 except (ValueError, TypeError):
                     pass
             
-            # Store the price data with source column info
+            # Store the price data with source column info and Excel row number
             if price is not None and price_column is not None:
+                excel_row_number = index + 1  # Convert to 1-based row number (Excel style)
                 price_data[model_number] = {
                     "price": f"{price:.2f}",
-                    "source_column": price_column
+                    "source_column": price_column,
+                    "excel_row": excel_row_number
                 }
-                logging.debug(f"Found item {model_number}: ${price:.2f} from Column {price_column}")
+                logging.debug(f"Found item {model_number}: ${price:.2f} from Column {price_column} at Excel row {excel_row_number}")
             else:
                 logging.warning(f"No valid price found for model {model_number} in columns D or E")
         

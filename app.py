@@ -207,16 +207,18 @@ def upload_price_book():
             item_count = 0
             for model_number, price_info in price_data.items():
                 try:
-                    # Handle new data structure with price and source column
+                    # Handle new data structure with price, source column, and Excel row
                     if isinstance(price_info, dict):
                         price_float = float(price_info["price"])
                         source_column = price_info["source_column"]
+                        excel_row = price_info.get("excel_row", "Unknown")
                     else:
                         # Fallback for old format
                         price_float = float(price_info)
                         source_column = "Unknown"
+                        excel_row = "Unknown"
                     
-                    new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id, source_column=source_column)
+                    new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id, source_column=source_column, excel_row=excel_row)
                     db.session.add(new_item)
                     item_count += 1
                     logging.debug(f"Added item {model_number}: ${price_float:.2f} from Column {source_column}")
@@ -348,16 +350,16 @@ def compare_with_price_book(extracted_data, price_book):
     # Get all price items for this price book with their IDs to use as row numbers
     price_items = PriceItem.query.filter_by(price_book_id=price_book_id).all()
     
-    # Create a dictionary to lookup price, row number, and source column
+    # Create a dictionary to lookup price, Excel row number, and source column
     price_items_dict = {}
     for item in price_items:
         price_items_dict[item.model_number] = {
             "price": item.price,
-            "row_number": item.id,  # Using database ID as row reference
+            "excel_row": item.excel_row or "Unknown",  # Use actual Excel row number
             "source_column": item.source_column or "Unknown"  # Include source column info
         }
     
-    for item in extracted_data:
+    for po_line_number, item in enumerate(extracted_data, 1):
         # Ensure there's always a valid model number (never null)
         model_number = item.get("model", "")
         if model_number is None or model_number == "":
@@ -367,7 +369,8 @@ def compare_with_price_book(extracted_data, price_book):
             "model": model_number,
             "po_price": item.get("price", "Extraction Issue"),
             "status": "Data Extraction Issue",
-            "row_number": None  # Initialize row number to None
+            "po_line_number": po_line_number,  # Track PO line number
+            "price_book_row": None  # Initialize price book row to None
         }
         
         # Include description if available
@@ -411,7 +414,7 @@ def compare_with_price_book(extracted_data, price_book):
             item_data = price_items_dict[matched_model]
             book_price = item_data["price"]
             result["book_price"] = book_price
-            result["row_number"] = item_data["row_number"]
+            result["price_book_row"] = item_data["excel_row"]  # Use actual Excel row number
             result["source_column"] = item_data["source_column"]  # Include source column info
             
             # Compare prices
