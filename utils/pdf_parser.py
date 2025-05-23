@@ -88,6 +88,8 @@ def extract_data_from_pdf(pdf_path):
                 
                 # Log each extracted line for debugging
                 for i, item in enumerate(extracted_data, 1):
+                    if i == 2:  # Focus on line 2 specifically
+                        logging.error(f"PDF EXTRACTION Line 2: FULL DATA = {item}")
                     logging.debug(f"PDF Line {i}: model='{item.get('model', 'N/A')}', price='{item.get('price', 'N/A')}', description='{item.get('description', 'N/A')[:100]}...'")
                 
                 return extracted_data
