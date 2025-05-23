@@ -211,7 +211,10 @@ def dashboard():
 @login_required
 def admin_panel():
     """Admin panel for managing user accounts"""
-    # Temporary: Allow access for all logged-in users for now
+    # Check if current user is admin
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('dashboard'))
     
     # Get all users with their stats
     users = db.session.query(User).all()
