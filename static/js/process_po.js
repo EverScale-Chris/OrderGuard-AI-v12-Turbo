@@ -214,7 +214,8 @@ function displayResults(data) {
                 <th class="px-4 py-3 text-end">Book Price</th>
                 <th class="px-4 py-3 text-end">Difference</th>
                 <th class="px-4 py-3 text-center">Source Column</th>
-                <th class="px-4 py-3 text-center">Price Book Row</th>
+                <th class="px-4 py-3 text-center">PO Line</th>
+                <th class="px-4 py-3 text-center">Book Row</th>
               </tr>
             </thead>
             <tbody>
@@ -291,8 +292,9 @@ function displayResults(data) {
                       </span>`;
     }
     
-    // Use the row number from the backend or display n/a if not found
-    const rowNumber = item.row_number || 'n/a';
+    // Get accurate line numbers
+    const poLineNumber = item.po_line_number || 'n/a';
+    const priceBookRow = item.price_book_row || 'n/a';
     
     // Display source column information with appropriate styling
     const sourceColumn = item.source_column || '-';
@@ -326,7 +328,10 @@ function displayResults(data) {
           ${sourceColumnBadge}
         </td>
         <td class="px-4 py-3 align-middle text-center">
-          <span class="badge bg-light text-dark">${rowNumber}</span>
+          <span class="badge bg-success-subtle text-success">${poLineNumber}</span>
+        </td>
+        <td class="px-4 py-3 align-middle text-center">
+          <span class="badge bg-light text-dark">${priceBookRow}</span>
         </td>
       </tr>
     `;
