@@ -356,7 +356,7 @@ def upload_price_book():
             
             # Add price items in batches to handle large uploads (up to 5000+ items)
             item_count = 0
-            batch_size = 25  # Optimized for very large files with thousands of items
+            batch_size = 10  # Conservative batch size to stay well under database parameter limits
             items_to_add = []
             
             for model_number, price_info in price_data.items():
