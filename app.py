@@ -145,34 +145,36 @@ def dashboard():
         # Get all processed POs for this user
         processed_pos = ProcessedPO.query.filter_by(user_id=current_user.id).all()
         
-        # Calculate overall metrics
-        total_pos = len(processed_pos)
+        # Calculate overall metrics - only count each unique PO once
+        po_numbers_processed = {}  # Track unique PO numbers and their data
         total_lines_reviewed = 0
         total_mismatches = 0
         total_not_found = 0
         total_matches = 0
         total_savings = 0.0
         
-        po_numbers = set()  # Track unique PO numbers
-        
         for po in processed_pos:
             # Extract PO number from filename to ensure uniqueness
             po_number = extract_po_number_from_filename(po.filename)
-            po_numbers.add(po_number)
-            line_items = POLineItem.query.filter_by(processed_po_id=po.id).all()
             
-            for item in line_items:
-                total_lines_reviewed += 1
+            # Only process each unique PO number once (use the most recent one)
+            if po_number not in po_numbers_processed:
+                po_numbers_processed[po_number] = po
                 
-                if item.status == 'Match':
-                    total_matches += 1
-                elif item.status == 'Mismatch':
-                    total_mismatches += 1
-                    # Calculate savings (when PO price < book price, meaning you're paying less)
-                    if item.book_price and item.po_price < item.book_price:
-                        total_savings += (item.book_price - item.po_price)
-                elif item.status == 'Model Not Found':
-                    total_not_found += 1
+                line_items = POLineItem.query.filter_by(processed_po_id=po.id).all()
+                
+                for item in line_items:
+                    total_lines_reviewed += 1
+                    
+                    if item.status == 'Match':
+                        total_matches += 1
+                    elif item.status == 'Mismatch':
+                        total_mismatches += 1
+                        # Calculate savings (when PO price < book price, meaning you're paying less)
+                        if item.book_price and item.po_price < item.book_price:
+                            total_savings += (item.book_price - item.po_price)
+                    elif item.status == 'Model Not Found':
+                        total_not_found += 1
         
         # Calculate percentages
         match_percentage = (total_matches / total_lines_reviewed * 100) if total_lines_reviewed > 0 else 0
@@ -180,13 +182,13 @@ def dashboard():
         not_found_percentage = (total_not_found / total_lines_reviewed * 100) if total_lines_reviewed > 0 else 0
         
         # Average savings per PO
-        avg_savings_per_po = total_savings / len(po_numbers) if po_numbers else 0
+        avg_savings_per_po = total_savings / len(po_numbers_processed) if po_numbers_processed else 0
         
         # Recent activity (last 10 POs)
         recent_pos = ProcessedPO.query.filter_by(user_id=current_user.id).order_by(ProcessedPO.processed_at.desc()).limit(10).all()
         
         metrics = {
-            'total_pos': len(po_numbers),  # Unique PO count
+            'total_pos': len(po_numbers_processed),  # Unique PO count
             'total_lines_reviewed': total_lines_reviewed,
             'total_matches': total_matches,
             'total_mismatches': total_mismatches,
