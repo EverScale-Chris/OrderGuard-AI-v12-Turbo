@@ -14,15 +14,15 @@
     <!-- Key Metrics Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white h-100">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <div class="small">Total Savings</div>
-                            <div class="h3">${{ "%.2f"|format(metrics.total_savings) }}</div>
+                            <div class="small text-muted">Total Savings</div>
+                            <div class="h3 text-success">${{ "%.2f"|format(metrics.total_savings) }}</div>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
+                            <i class="fas fa-dollar-sign fa-2x text-success"></i>
                         </div>
                     </div>
                 </div>
@@ -30,15 +30,15 @@
         </div>
         
         <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white h-100">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <div class="small">POs Processed</div>
-                            <div class="h3">{{ metrics.total_pos }}</div>
+                            <div class="small text-muted">POs Processed</div>
+                            <div class="h3 text-primary">${{ metrics.total_pos }}</div>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-file-invoice fa-2x"></i>
+                            <i class="fas fa-file-invoice fa-2x text-primary"></i>
                         </div>
                     </div>
                 </div>
@@ -46,15 +46,15 @@
         </div>
         
         <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white h-100">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <div class="small">Lines Reviewed</div>
-                            <div class="h3">{{ metrics.total_lines_reviewed }}</div>
+                            <div class="small text-muted">Lines Reviewed</div>
+                            <div class="h3 text-info">{{ metrics.total_lines_reviewed }}</div>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-list fa-2x"></i>
+                            <i class="fas fa-list fa-2x text-info"></i>
                         </div>
                     </div>
                 </div>
@@ -62,15 +62,15 @@
         </div>
         
         <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white h-100">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <div class="small">Discrepancies Found</div>
-                            <div class="h3">{{ metrics.total_mismatches }}</div>
+                            <div class="small text-muted">Discrepancies Found</div>
+                            <div class="h3 text-warning">{{ metrics.total_mismatches }}</div>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
                         </div>
                     </div>
                 </div>
