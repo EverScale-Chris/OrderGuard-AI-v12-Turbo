@@ -25,6 +25,16 @@ def parse_excel_file(filepath):
         logging.debug(f"Excel file shape: {df.shape}")
         logging.debug(f"First 5 rows: {df.head().to_string()}")
         
+        # Get column headers from the first row
+        column_headers = {}
+        if len(df) > 0:
+            first_row = df.iloc[0]
+            for col_idx in range(len(first_row)):
+                if pd.notna(first_row.iloc[col_idx]):
+                    column_headers[col_idx] = str(first_row.iloc[col_idx]).strip()
+        
+        logging.debug(f"Column headers found: {column_headers}")
+        
         # Extract model numbers and prices using column positions
         # Column A (index 0) = Item Number
         # Column D (index 3) = Primary price location
@@ -48,12 +58,12 @@ def parse_excel_file(filepath):
             
             # Look for price in Column E first (index 4) - NOW PRIMARY
             price = None
-            price_column = None
+            price_column_header = None
             
             if len(row) > 4 and pd.notna(row.iloc[4]):
                 try:
                     price = float(row.iloc[4])
-                    price_column = "E"
+                    price_column_header = column_headers.get(4, "Column E")
                 except (ValueError, TypeError):
                     pass
             
@@ -61,19 +71,19 @@ def parse_excel_file(filepath):
             if price is None and len(row) > 3 and pd.notna(row.iloc[3]):
                 try:
                     price = float(row.iloc[3])
-                    price_column = "D"
+                    price_column_header = column_headers.get(3, "Column D")
                 except (ValueError, TypeError):
                     pass
             
             # Store the price data with source column info and Excel row number
-            if price is not None and price_column is not None:
+            if price is not None and price_column_header is not None:
                 excel_row_number = index + 1  # Convert to 1-based row number (Excel style)
                 price_data[model_number] = {
                     "price": f"{price:.2f}",
-                    "source_column": price_column,
+                    "source_column": price_column_header,
                     "excel_row": excel_row_number
                 }
-                logging.debug(f"Found item {model_number}: ${price:.2f} from Column {price_column} at Excel row {excel_row_number}")
+                logging.debug(f"Found item {model_number}: ${price:.2f} from '{price_column_header}' at Excel row {excel_row_number}")
             else:
                 logging.warning(f"No valid price found for model {model_number} in columns D or E")
         
