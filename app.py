@@ -212,7 +212,7 @@ def dashboard():
 def admin_panel():
     """Admin panel for managing user accounts"""
     # Allow access for the app owner
-    if current_user.email != 'jk.galli@yahoo.com':
+    if current_user.username != 'test':
         flash('Access denied. Admin privileges required.', 'danger')
         return redirect(url_for('index'))
     
