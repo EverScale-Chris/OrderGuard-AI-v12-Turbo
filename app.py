@@ -205,12 +205,21 @@ def upload_price_book():
             
             # Add price items
             item_count = 0
-            for model_number, price in price_data.items():
+            for model_number, price_info in price_data.items():
                 try:
-                    price_float = float(price)
+                    # Handle new data structure with price and source column
+                    if isinstance(price_info, dict):
+                        price_float = float(price_info["price"])
+                        source_column = price_info["source_column"]
+                    else:
+                        # Fallback for old format
+                        price_float = float(price_info)
+                        source_column = "Unknown"
+                    
                     new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id)
                     db.session.add(new_item)
                     item_count += 1
+                    logging.debug(f"Added item {model_number}: ${price_float:.2f} from Column {source_column}")
                 except Exception as item_error:
                     logging.error(f"Error adding item {model_number}: {str(item_error)}")
             
