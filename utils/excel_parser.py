@@ -46,22 +46,22 @@ def parse_excel_file(filepath):
             if not model_number or model_number == "nan":
                 continue
             
-            # Look for price in Column D first (index 3)
+            # Look for price in Column E first (index 4) - NOW PRIMARY
             price = None
             price_column = None
             
-            if len(row) > 3 and pd.notna(row.iloc[3]):
-                try:
-                    price = float(row.iloc[3])
-                    price_column = "D"
-                except (ValueError, TypeError):
-                    pass
-            
-            # If no valid price in Column D, try Column E (index 4)
-            if price is None and len(row) > 4 and pd.notna(row.iloc[4]):
+            if len(row) > 4 and pd.notna(row.iloc[4]):
                 try:
                     price = float(row.iloc[4])
                     price_column = "E"
+                except (ValueError, TypeError):
+                    pass
+            
+            # If no valid price in Column E, try Column D (index 3) as fallback
+            if price is None and len(row) > 3 and pd.notna(row.iloc[3]):
+                try:
+                    price = float(row.iloc[3])
+                    price_column = "D"
                 except (ValueError, TypeError):
                     pass
             
