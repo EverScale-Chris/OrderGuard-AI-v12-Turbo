@@ -207,6 +207,88 @@ def dashboard():
         logging.error(f"Error loading dashboard: {str(e)}")
         return render_template('dashboard.html', metrics={}, error="Unable to load dashboard data")
 
+@app.route('/admin')
+@login_required
+def admin_panel():
+    """Admin panel for managing user accounts"""
+    # Check if current user is admin
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    # Get all users with their stats
+    users = db.session.query(User).all()
+    user_stats = []
+    
+    for user in users:
+        # Count user's price books and processed POs
+        price_book_count = PriceBook.query.filter_by(user_id=user.id).count()
+        processed_po_count = ProcessedPO.query.filter_by(user_id=user.id).count()
+        
+        user_stats.append({
+            'user': user,
+            'price_book_count': price_book_count,
+            'processed_po_count': processed_po_count
+        })
+    
+    return render_template('admin.html', user_stats=user_stats)
+
+@app.route('/admin/toggle-admin/<int:user_id>', methods=['POST'])
+@login_required
+def toggle_admin(user_id):
+    """Toggle admin status for a user"""
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent removing admin from yourself
+    if user.id == current_user.id:
+        flash('You cannot change your own admin status.', 'warning')
+        return redirect(url_for('admin_panel'))
+    
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    
+    status = "granted" if user.is_admin else "removed"
+    flash(f'Admin privileges {status} for {user.username}.', 'success')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    """Delete a user account and all associated data"""
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting yourself
+    if user.id == current_user.id:
+        flash('You cannot delete your own account.', 'warning')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        # Delete user's processed POs (cascade will handle line items)
+        ProcessedPO.query.filter_by(user_id=user.id).delete()
+        
+        # Delete user's price books (cascade will handle price items)
+        PriceBook.query.filter_by(user_id=user.id).delete()
+        
+        # Delete the user
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'User {user.username} and all associated data deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error deleting user {user_id}: {str(e)}")
+        flash('Error deleting user. Please try again.', 'danger')
+    
+    return redirect(url_for('admin_panel'))
+
 @app.route('/api/pricebooks', methods=['GET'])
 @login_required
 def get_price_books():

@@ -226,6 +226,11 @@
                     <li class="nav-item mx-1">
                         <a class="nav-link {{ 'active' if request.path == '/dashboard' }}" href="/dashboard"><i class="fas fa-chart-bar me-1"></i> Dashboard</a>
                     </li>
+                    {% if current_user.is_admin %}
+                    <li class="nav-item mx-1">
+                        <a class="nav-link {{ 'active' if request.path == '/admin' }}" href="/admin"><i class="fas fa-users-cog me-1"></i> Admin</a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item dropdown mx-1">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
