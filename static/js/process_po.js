@@ -213,6 +213,7 @@ function displayResults(data) {
                 <th class="px-4 py-3 text-end">PO Price</th>
                 <th class="px-4 py-3 text-end">Book Price</th>
                 <th class="px-4 py-3 text-end">Difference</th>
+                <th class="px-4 py-3 text-center">Source Column</th>
                 <th class="px-4 py-3 text-center">Price Book Row</th>
               </tr>
             </thead>
@@ -293,6 +294,18 @@ function displayResults(data) {
     // Use the row number from the backend or display n/a if not found
     const rowNumber = item.row_number || 'n/a';
     
+    // Display source column information with appropriate styling
+    const sourceColumn = item.source_column || '-';
+    let sourceColumnBadge = '-';
+    
+    if (sourceColumn === 'D') {
+      sourceColumnBadge = `<span class="badge bg-primary-subtle text-primary">Column D</span>`;
+    } else if (sourceColumn === 'E') {
+      sourceColumnBadge = `<span class="badge bg-info-subtle text-info">Column E</span>`;
+    } else if (sourceColumn !== '-') {
+      sourceColumnBadge = `<span class="badge bg-secondary-subtle text-secondary">${sourceColumn}</span>`;
+    }
+    
     html += `
       <tr class="border-bottom">
         <td class="px-4 py-3 align-middle">
@@ -308,6 +321,9 @@ function displayResults(data) {
         <td class="px-4 py-3 align-middle text-end">${item.book_price ? '$' + parseFloat(item.book_price).toFixed(2) : '-'}</td>
         <td class="px-4 py-3 align-middle text-end ${priceCompareClass}">
           <strong>${priceDifference}</strong>
+        </td>
+        <td class="px-4 py-3 align-middle text-center">
+          ${sourceColumnBadge}
         </td>
         <td class="px-4 py-3 align-middle text-center">
           <span class="badge bg-light text-dark">${rowNumber}</span>
