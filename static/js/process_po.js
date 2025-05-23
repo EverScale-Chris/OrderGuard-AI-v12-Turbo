@@ -300,10 +300,8 @@ function displayResults(data) {
     const sourceColumn = item.source_column || '-';
     let sourceColumnBadge = '-';
     
-    if (sourceColumn === 'D') {
-      sourceColumnBadge = `<span class="badge bg-primary-subtle text-primary">Column D</span>`;
-    } else if (sourceColumn === 'E') {
-      sourceColumnBadge = `<span class="badge bg-info-subtle text-info">Column E</span>`;
+    if (sourceColumn && sourceColumn !== '-') {
+      sourceColumnBadge = `<span class="badge bg-info-subtle text-info">${sourceColumn}</span>`;
     } else if (sourceColumn !== '-') {
       sourceColumnBadge = `<span class="badge bg-secondary-subtle text-secondary">${sourceColumn}</span>`;
     }
