@@ -255,7 +255,15 @@ def delete_price_book(price_book_id):
         if not price_book:
             return jsonify({"error": "Price book not found"}), 404
         
-        # Delete all associated price items first
+        # Delete all processed POs that reference this price book first
+        processed_pos = ProcessedPO.query.filter_by(price_book_id=price_book_id, user_id=current_user.id).all()
+        for po in processed_pos:
+            # Delete all line items for each PO
+            POLineItem.query.filter_by(processed_po_id=po.id).delete()
+            # Delete the PO itself
+            db.session.delete(po)
+        
+        # Delete all associated price items
         PriceItem.query.filter_by(price_book_id=price_book_id).delete()
         
         # Delete the price book
