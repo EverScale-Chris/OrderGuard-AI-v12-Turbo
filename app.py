@@ -363,11 +363,15 @@ def compare_with_price_book(extracted_data, price_book):
         }
     
     for po_line_number, item in enumerate(extracted_data, 1):
+        logging.debug(f"PO line {po_line_number}: Raw extracted data = {item}")
+        
         # Ensure there's always a valid model number (never null)
         model_number = item.get("model", "")
         if model_number is None or model_number == "":
             model_number = "Unknown Item"
             
+        logging.debug(f"PO line {po_line_number}: Primary model = '{model_number}'")
+        
         result = {
             "model": model_number,
             "po_price": item.get("price", "Extraction Issue"),
@@ -414,6 +418,7 @@ def compare_with_price_book(extracted_data, price_book):
         
         # If we found a match, compare prices
         if matched_model:
+            logging.debug(f"PO line {po_line_number}: Found match for '{matched_model}' (original model: '{model_number}')")
             item_data = price_items_dict[matched_model]
             book_price = item_data["price"]
             result["book_price"] = book_price
