@@ -350,9 +350,11 @@ def upload_price_book():
             items_sample = list(price_data.items())[:5] if price_data else []
             logging.debug(f"Sample items: {items_sample}")
             
-            # Create new price book with the current user's ID
+            # Create and save price book FIRST with the current user's ID
             new_price_book = PriceBook(id=pricebook_id, name=pricebook_name, user_id=current_user.id)
-            logging.debug(f"Created price book object: {new_price_book}")
+            db.session.add(new_price_book)
+            db.session.commit()  # Save the price book first so items can reference it
+            logging.debug(f"Created and saved price book: {new_price_book}")
             
             # Add price items in batches to handle large uploads (up to 5000+ items)
             item_count = 0
@@ -396,12 +398,7 @@ def upload_price_book():
                 logging.debug(f"Committed final batch of {len(items_to_add)} items")
             
             logging.debug(f"Added {item_count} price items")
-            
-            # Add price book and commit transaction
-            db.session.add(new_price_book)
-            logging.debug("Added price book to session, committing...")
-            db.session.commit()
-            logging.debug("Successfully committed to database")
+            logging.debug("Successfully completed price book upload")
             
             # Clean up the temporary file
             os.remove(filepath)
