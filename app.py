@@ -384,19 +384,21 @@ def compare_with_price_book(extracted_data, price_book):
         
         if "model" in item and item["model"] in price_items_dict:
             matched_model = item["model"]
+            logging.info(f"Using direct model match: {matched_model}")
         else:
             # If no direct match, try to find model number in description
             if "description" in item and item["description"]:
                 description = item["description"]
                 
                 # Try to find any price book model number within the description
+                # Stop at the FIRST match found to avoid confusion with multiple models in one row
                 for model_number in price_book_model_numbers:
                     if model_number in description:
                         matched_model = model_number
                         # Update the model in the result to the matched one from description
                         result["model"] = model_number
-                        logging.info(f"Found model {model_number} in description: {description}")
-                        break
+                        logging.info(f"Found FIRST model {model_number} in description: {description}")
+                        break  # Stop searching after finding the first match
         
         # If we found a match, compare prices
         if matched_model:
