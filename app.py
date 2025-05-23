@@ -354,9 +354,9 @@ def upload_price_book():
             new_price_book = PriceBook(id=pricebook_id, name=pricebook_name, user_id=current_user.id)
             logging.debug(f"Created price book object: {new_price_book}")
             
-            # Add price items in batches to handle large uploads
+            # Add price items in batches to handle large uploads (up to 5000+ items)
             item_count = 0
-            batch_size = 50  # Process in even smaller batches to avoid parameter limits
+            batch_size = 25  # Optimized for very large files with thousands of items
             items_to_add = []
             
             for model_number, price_info in price_data.items():
@@ -382,7 +382,7 @@ def upload_price_book():
                     if len(items_to_add) >= batch_size:
                         db.session.add_all(items_to_add)
                         db.session.commit()
-                        logging.debug(f"Committed batch of {len(items_to_add)} items")
+                        logging.info(f"Successfully processed batch: {item_count - len(items_to_add) + 1} to {item_count} items")
                         items_to_add = []
                     
                     logging.debug(f"Added item {model_number}: ${price_float:.2f} from Column {source_column}")
