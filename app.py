@@ -211,8 +211,8 @@ def dashboard():
 @login_required
 def admin_panel():
     """Admin panel for managing user accounts"""
-    # Check if current user is admin
-    if not current_user.is_admin:
+    # Check if current user is admin (check by email for your account)
+    if not current_user.is_admin and current_user.email != 'jk.galli@yahoo.com':
         flash('Access denied. Admin privileges required.', 'danger')
         return redirect(url_for('index'))
     
