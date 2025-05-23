@@ -216,7 +216,7 @@ def upload_price_book():
                         price_float = float(price_info)
                         source_column = "Unknown"
                     
-                    new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id)
+                    new_item = PriceItem(model_number=model_number, price=price_float, price_book_id=pricebook_id, source_column=source_column)
                     db.session.add(new_item)
                     item_count += 1
                     logging.debug(f"Added item {model_number}: ${price_float:.2f} from Column {source_column}")
@@ -348,12 +348,13 @@ def compare_with_price_book(extracted_data, price_book):
     # Get all price items for this price book with their IDs to use as row numbers
     price_items = PriceItem.query.filter_by(price_book_id=price_book_id).all()
     
-    # Create a dictionary to lookup both price and row number (using the DB ID as row number)
+    # Create a dictionary to lookup price, row number, and source column
     price_items_dict = {}
     for item in price_items:
         price_items_dict[item.model_number] = {
             "price": item.price,
-            "row_number": item.id  # Using database ID as row reference
+            "row_number": item.id,  # Using database ID as row reference
+            "source_column": item.source_column or "Unknown"  # Include source column info
         }
     
     for item in extracted_data:
@@ -403,6 +404,7 @@ def compare_with_price_book(extracted_data, price_book):
             book_price = item_data["price"]
             result["book_price"] = book_price
             result["row_number"] = item_data["row_number"]
+            result["source_column"] = item_data["source_column"]  # Include source column info
             
             # Compare prices
             try:
@@ -481,7 +483,9 @@ I have reviewed your purchase order ({po_number}). The following discrepancies h
         except (ValueError, TypeError):
             book_price_formatted = f"${item['book_price']}"
             
-        email_text += f"Line Item {i} - {item['model']} - PO Price {po_price_formatted} - Price Book {book_price_formatted}\n"
+        # Include source column information if available
+        source_info = f" (Column {item['source_column']})" if item.get('source_column') else ""
+        email_text += f"Line Item {i} - {item['model']} - PO Price {po_price_formatted} - Price Book {book_price_formatted}{source_info}\n"
     
     # If there are no mismatched items
     if not mismatched_items:
