@@ -166,9 +166,9 @@ def dashboard():
                     total_matches += 1
                 elif item.status == 'Mismatch':
                     total_mismatches += 1
-                    # Calculate savings (when PO price > book price)
-                    if item.book_price and item.po_price > item.book_price:
-                        total_savings += (item.po_price - item.book_price)
+                    # Calculate savings (when PO price < book price, meaning you're paying less)
+                    if item.book_price and item.po_price < item.book_price:
+                        total_savings += (item.book_price - item.po_price)
                 elif item.status == 'Model Not Found':
                     total_not_found += 1
         
