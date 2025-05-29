@@ -621,8 +621,9 @@ def compare_with_price_book(extracted_data, price_book):
         
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
-        # Special logging for line 3 to debug BW prefix issue
-        if po_line_number == 3:
+        # Special logging for any line with BW prefix to debug the issue
+        has_bw_prefix = any(model.startswith("BW") for model in unique_models)
+        if has_bw_prefix or po_line_number == 3:
             logging.error(f"LINE 3 DEBUG - All potential models: {unique_models}")
             for model in unique_models:
                 logging.error(f"LINE 3 DEBUG - Checking model: '{model}'")
@@ -636,19 +637,12 @@ def compare_with_price_book(extracted_data, price_book):
                     else:
                         logging.error(f"LINE 3 DEBUG - BW prefix NO match for: '{stripped}'")
         
-        # Find the FIRST model that exists in our price book (prioritize matches)
-        # Check both direct matches AND prefix-stripped matches for each model
+        # Find the BEST model match - prioritize BW prefix removal over direct matches
+        # This ensures we match customer prefixed part numbers to vendor base numbers
+        
+        # First pass: Check for BW prefix matches (highest priority)
         for model in unique_models:
-            # First try direct match
-            if model in price_items_dict:
-                matched_model = model
-                if po_line_number == 2:
-                    logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
-                logging.info(f"Using direct matching model {model} from available options: {unique_models}")
-                break
-            
-            # Then try BW prefix removal
-            elif model.startswith("BW"):
+            if model.startswith("BW"):
                 stripped_model = model[2:]  # Remove "BW" prefix
                 if stripped_model in price_items_dict:
                     matched_model = stripped_model
@@ -656,15 +650,27 @@ def compare_with_price_book(extracted_data, price_book):
                         logging.error(f"LINE 2 DEBUG - FOUND BW PREFIX MATCH: {stripped_model} from {model}")
                     logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'BW' prefix from '{model}'")
                     break
-            
-            # Then try B prefix removal (but not BW)
-            elif model.startswith("B") and not model.startswith("BW"):
-                stripped_model = model[1:]  # Remove "B" prefix
-                if stripped_model in price_items_dict:
-                    matched_model = stripped_model
+        
+        # Second pass: Check for B prefix matches (if no BW match found)
+        if not matched_model:
+            for model in unique_models:
+                if model.startswith("B") and not model.startswith("BW"):
+                    stripped_model = model[1:]  # Remove "B" prefix
+                    if stripped_model in price_items_dict:
+                        matched_model = stripped_model
+                        if po_line_number == 2:
+                            logging.error(f"LINE 2 DEBUG - FOUND B PREFIX MATCH: {stripped_model} from {model}")
+                        logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'B' prefix from '{model}'")
+                        break
+        
+        # Third pass: Check for direct matches (lowest priority)
+        if not matched_model:
+            for model in unique_models:
+                if model in price_items_dict:
+                    matched_model = model
                     if po_line_number == 2:
-                        logging.error(f"LINE 2 DEBUG - FOUND B PREFIX MATCH: {stripped_model} from {model}")
-                    logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'B' prefix from '{model}'")
+                        logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
+                    logging.info(f"Using direct matching model {model} from available options: {unique_models}")
                     break
         
         if po_line_number == 2 and not matched_model:
