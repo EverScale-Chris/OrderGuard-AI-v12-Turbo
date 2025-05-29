@@ -622,32 +622,35 @@ def compare_with_price_book(extracted_data, price_book):
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
         # Find the FIRST model that exists in our price book (prioritize matches)
+        # Check both direct matches AND prefix-stripped matches for each model
         for model in unique_models:
+            # First try direct match
             if model in price_items_dict:
                 matched_model = model
                 if po_line_number == 2:
-                    logging.error(f"LINE 2 DEBUG - FOUND MATCH: {model}")
-                logging.info(f"Using matching model {model} from available options: {unique_models}")
+                    logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
+                logging.info(f"Using direct matching model {model} from available options: {unique_models}")
                 break
-        
-        # If no direct match found, apply fallback logic for prefix removal
-        if not matched_model:
-            for model in unique_models:
-                # Check for BW prefix first
-                if model.startswith("BW"):
-                    stripped_model = model[2:]  # Remove "BW" prefix
-                    if stripped_model in price_items_dict:
-                        matched_model = stripped_model
-                        logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'BW' prefix from '{model}'")
-                        break
-                
-                # Check for B prefix (but not BW)
-                elif model.startswith("B") and not model.startswith("BW"):
-                    stripped_model = model[1:]  # Remove "B" prefix
-                    if stripped_model in price_items_dict:
-                        matched_model = stripped_model
-                        logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'B' prefix from '{model}'")
-                        break
+            
+            # Then try BW prefix removal
+            elif model.startswith("BW"):
+                stripped_model = model[2:]  # Remove "BW" prefix
+                if stripped_model in price_items_dict:
+                    matched_model = stripped_model
+                    if po_line_number == 2:
+                        logging.error(f"LINE 2 DEBUG - FOUND BW PREFIX MATCH: {stripped_model} from {model}")
+                    logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'BW' prefix from '{model}'")
+                    break
+            
+            # Then try B prefix removal (but not BW)
+            elif model.startswith("B") and not model.startswith("BW"):
+                stripped_model = model[1:]  # Remove "B" prefix
+                if stripped_model in price_items_dict:
+                    matched_model = stripped_model
+                    if po_line_number == 2:
+                        logging.error(f"LINE 2 DEBUG - FOUND B PREFIX MATCH: {stripped_model} from {model}")
+                    logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'B' prefix from '{model}'")
+                    break
         
         if po_line_number == 2 and not matched_model:
             logging.error(f"LINE 2 DEBUG - NO MATCH FOUND from {unique_models}")
