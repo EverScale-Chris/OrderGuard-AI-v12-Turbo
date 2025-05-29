@@ -621,6 +621,21 @@ def compare_with_price_book(extracted_data, price_book):
         
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
+        # Special logging for line 3 to debug BW prefix issue
+        if po_line_number == 3:
+            logging.error(f"LINE 3 DEBUG - All potential models: {unique_models}")
+            for model in unique_models:
+                logging.error(f"LINE 3 DEBUG - Checking model: '{model}'")
+                if model in price_items_dict:
+                    logging.error(f"LINE 3 DEBUG - Direct match found for: '{model}'")
+                elif model.startswith("BW"):
+                    stripped = model[2:]
+                    logging.error(f"LINE 3 DEBUG - BW prefix check: '{model}' -> '{stripped}'")
+                    if stripped in price_items_dict:
+                        logging.error(f"LINE 3 DEBUG - BW prefix match found: '{stripped}'")
+                    else:
+                        logging.error(f"LINE 3 DEBUG - BW prefix NO match for: '{stripped}'")
+        
         # Find the FIRST model that exists in our price book (prioritize matches)
         # Check both direct matches AND prefix-stripped matches for each model
         for model in unique_models:
