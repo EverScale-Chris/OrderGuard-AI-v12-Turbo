@@ -634,24 +634,24 @@ def compare_with_price_book(extracted_data, price_book):
                 logging.info(f"PO line {po_line_number}: STEP 1 - Direct exact match '{model}'")
                 break
         
-        # STEP 2: BW prefix search - add "BW" to all extracted models, check for exact matches
+        # STEP 2: BW prefix search - for extracted BW models, remove BW and check price book
         if not matched_model:
             for model in unique_models:
-                if not model.startswith("BW") and not model.startswith("B"):
-                    bw_model = "BW" + model
-                    if bw_model in price_items_dict:
-                        matched_model = bw_model  # Show BW model but map to base price
-                        logging.info(f"PO line {po_line_number}: STEP 2 - BW prefix exact match '{bw_model}' (maps to '{model}')")
+                if model.startswith("BW"):
+                    base_model = model[2:]  # Remove "BW" prefix
+                    if base_model in price_items_dict:
+                        matched_model = model  # Show BW model but map to base price
+                        logging.info(f"PO line {po_line_number}: STEP 2 - BW model '{model}' maps to price book '{base_model}'")
                         break
         
-        # STEP 3: B prefix search - add "B" to all extracted models, check for exact matches
+        # STEP 3: B prefix search - for extracted B models, remove B and check price book
         if not matched_model:
             for model in unique_models:
-                if not model.startswith("BW") and not model.startswith("B"):
-                    b_model = "B" + model
-                    if b_model in price_items_dict:
-                        matched_model = b_model  # Show B model but map to base price
-                        logging.info(f"PO line {po_line_number}: STEP 3 - B prefix exact match '{b_model}' (maps to '{model}')")
+                if model.startswith("B") and not model.startswith("BW"):
+                    base_model = model[1:]  # Remove "B" prefix
+                    if base_model in price_items_dict:
+                        matched_model = model  # Show B model but map to base price
+                        logging.info(f"PO line {po_line_number}: STEP 3 - B model '{model}' maps to price book '{base_model}'")
                         break
         
         # STEP 4: If no matches found, it will be marked as "NOT FOUND"
@@ -693,12 +693,6 @@ def compare_with_price_book(extracted_data, price_book):
                 # Handle case where price might not be convertible to float
                 result["status"] = "Price Format Error"
         else:
-            # No match found - but check if we should show a BW model anyway
-            bw_models = [m for m in unique_models if m.startswith("BW")]
-            if bw_models:
-                # Prioritize showing BW model even if not in price book
-                result["model"] = bw_models[0]
-                logging.info(f"PO line {po_line_number}: No price book match, showing BW model '{bw_models[0]}' from extracted models: {unique_models}")
             result["status"] = "Model Not Found"
         
         results.append(result)
