@@ -627,105 +627,36 @@ def compare_with_price_book(extracted_data, price_book):
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
 
-        # Prioritize BW and B prefixed models first
-        # First pass: Look for BW-prefixed models that exist in price book
-        if po_line_number <= 6:
-            with open('/tmp/debug_lines.txt', 'a') as f:
-                f.write(f"=== LINE {po_line_number} DEBUG ===\n")
-                f.write(f"Extracted models: {unique_models}\n")
-                f.write(f"BW models found: {[m for m in unique_models if m.startswith('BW')]}\n")
-                f.write(f"Price book keys: {list(price_items_dict.keys())[:20]}\n")
-                f.write(f"BW models in price book: {[m for m in unique_models if m.startswith('BW') and m in price_items_dict]}\n\n")
-        
+        # STEP 1: Direct exact matches first - use any model that matches exactly as-is
         for model in unique_models:
-            if model.startswith("BW") and model in price_items_dict:
+            if model in price_items_dict:
                 matched_model = model
-                logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' from available options: {unique_models}")
-                if po_line_number in [3, 4, 6]:
-                    logging.error(f"=== LINE {po_line_number} MATCHED BW MODEL: {model} ===")
+                logging.info(f"PO line {po_line_number}: STEP 1 - Direct exact match '{model}'")
                 break
         
-        # Second pass: Look for BW-prefixed models that map to base models in price book
-        if not matched_model:
-            for model in unique_models:
-                if model.startswith("BW"):
-                    base_model = model[2:]  # Remove "BW" prefix
-                    # First check for exact match
-                    if base_model in price_items_dict:
-                        matched_model = model  # Use the BW version but map to exact base price
-                        logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
-                        if po_line_number in [3, 4, 6]:
-                            print(f"=== LINE {po_line_number} MATCHED BW->BASE: {model} -> {base_model} ===")
-                            logging.error(f"=== LINE {po_line_number} MATCHED BW->BASE: {model} -> {base_model} ===")
-                        break
-                    # No partial matches - only exact matches are allowed
-        
-        # Third pass: Look for B-prefixed models (but not BW)
-        if not matched_model:
-            for model in unique_models:
-                if model.startswith("B") and not model.startswith("BW") and model in price_items_dict:
-                    matched_model = model
-                    logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' from available options: {unique_models}")
-                    break
-        
-        # Fourth pass: Look for B-prefixed models that map to base models in price book
-        if not matched_model:
-            for model in unique_models:
-                if model.startswith("B") and not model.startswith("BW"):
-                    base_model = model[1:]  # Remove "B" prefix
-                    # First check for exact match
-                    if base_model in price_items_dict:
-                        matched_model = model  # Use the B version but map to exact base price
-                        logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
-                        break
-                    # No partial matches - only exact matches are allowed
-        
-        # Fifth pass: Look for direct matches (non-prefixed) - but only if no BW version exists
-        if not matched_model:
-            # First check if there's a BW version of any direct match
-            has_bw_version = False
-            for model in unique_models:
-                if model in price_items_dict and not model.startswith("BW") and not model.startswith("B"):
-                    # Check if there's a BW version of this model in the extracted models
-                    bw_version = "BW" + model
-                    if bw_version in unique_models:
-                        has_bw_version = True
-                        break
-            
-            # Only do direct matches if no BW versions exist
-            if not has_bw_version:
-                for model in unique_models:
-                    if model in price_items_dict and not model.startswith("BW") and not model.startswith("B"):
-                        matched_model = model
-                        if po_line_number == 2:
-                            logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
-                        logging.info(f"Using direct matching model {model} from available options: {unique_models}")
-                        break
-        
-        # Sixth pass: Look for exact BW prefix matches only (no partial matches)
+        # STEP 2: BW prefix search - add "BW" to all extracted models, check for exact matches
         if not matched_model:
             for model in unique_models:
                 if not model.startswith("BW") and not model.startswith("B"):
-                    # Find exact BW-prefixed models only
-                    exact_bw_match = "BW" + model
-                    if exact_bw_match in price_items_dict:
-                        matched_model = exact_bw_match
-                        logging.info(f"PO line {po_line_number}: Using exact BW match '{matched_model}' for extracted '{model}'")
+                    bw_model = "BW" + model
+                    if bw_model in price_items_dict:
+                        matched_model = bw_model  # Show BW model but map to base price
+                        logging.info(f"PO line {po_line_number}: STEP 2 - BW prefix exact match '{bw_model}' (maps to '{model}')")
                         break
         
-        # Fourth pass: Fallback logic on the PRIMARY extracted model number
-        if not matched_model and model_number and model_number != "Unknown Item":
-            # Try prepending "BW" to the parsed item number
-            bw_prefixed = "BW" + model_number
-            if bw_prefixed in price_items_dict:
-                matched_model = bw_prefixed
-                logging.info(f"PO line {po_line_number}: Found match '{bw_prefixed}' by prepending 'BW' to '{model_number}'")
-            else:
-                # Try prepending "B" to the parsed item number
-                b_prefixed = "B" + model_number
-                if b_prefixed in price_items_dict:
-                    matched_model = b_prefixed
-                    logging.info(f"PO line {po_line_number}: Found match '{b_prefixed}' by prepending 'B' to '{model_number}'")
+        # STEP 3: B prefix search - add "B" to all extracted models, check for exact matches
+        if not matched_model:
+            for model in unique_models:
+                if not model.startswith("BW") and not model.startswith("B"):
+                    b_model = "B" + model
+                    if b_model in price_items_dict:
+                        matched_model = b_model  # Show B model but map to base price
+                        logging.info(f"PO line {po_line_number}: STEP 3 - B prefix exact match '{b_model}' (maps to '{model}')")
+                        break
+        
+        # STEP 4: If no matches found, it will be marked as "NOT FOUND"
+        
+
         
         if po_line_number == 2 and not matched_model:
             logging.error(f"LINE 2 DEBUG - NO MATCH FOUND from {unique_models}")
@@ -738,9 +669,11 @@ def compare_with_price_book(extracted_data, price_book):
             
             # Handle BW/B prefixed models that map to base models
             lookup_model = matched_model
-            if matched_model.startswith("BW") and matched_model not in price_items_dict:
+            if matched_model.startswith("BW"):
+                # For BW models, always look up price using base model (without BW)
                 lookup_model = matched_model[2:]  # Remove BW prefix for price lookup
-            elif matched_model.startswith("B") and not matched_model.startswith("BW") and matched_model not in price_items_dict:
+            elif matched_model.startswith("B") and not matched_model.startswith("BW"):
+                # For B models, always look up price using base model (without B)
                 lookup_model = matched_model[1:]  # Remove B prefix for price lookup
             
             item_data = price_items_dict[lookup_model]
