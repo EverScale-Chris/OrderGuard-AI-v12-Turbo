@@ -667,15 +667,27 @@ def compare_with_price_book(extracted_data, price_book):
                         break
                     # No partial matches - only exact matches are allowed
         
-        # Fifth pass: Look for direct matches (non-prefixed)
+        # Fifth pass: Look for direct matches (non-prefixed) - but only if no BW version exists
         if not matched_model:
+            # First check if there's a BW version of any direct match
+            has_bw_version = False
             for model in unique_models:
                 if model in price_items_dict and not model.startswith("BW") and not model.startswith("B"):
-                    matched_model = model
-                    if po_line_number == 2:
-                        logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
-                    logging.info(f"Using direct matching model {model} from available options: {unique_models}")
-                    break
+                    # Check if there's a BW version of this model in the extracted models
+                    bw_version = "BW" + model
+                    if bw_version in unique_models:
+                        has_bw_version = True
+                        break
+            
+            # Only do direct matches if no BW versions exist
+            if not has_bw_version:
+                for model in unique_models:
+                    if model in price_items_dict and not model.startswith("BW") and not model.startswith("B"):
+                        matched_model = model
+                        if po_line_number == 2:
+                            logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
+                        logging.info(f"Using direct matching model {model} from available options: {unique_models}")
+                        break
         
         # Sixth pass: Look for exact BW prefix matches only (no partial matches)
         if not matched_model:
