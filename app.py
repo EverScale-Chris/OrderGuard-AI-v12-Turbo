@@ -638,16 +638,33 @@ def compare_with_price_book(extracted_data, price_book):
                     else:
                         logging.error(f"LINE 3 DEBUG - BW prefix NO match for: '{stripped}'")
         
-        # Find the FIRST model that exists in our price book (prioritize direct matches)
+        # Prioritize BW and B prefixed models first
+        # First pass: Look for BW-prefixed models
         for model in unique_models:
-            if model in price_items_dict:
+            if model.startswith("BW") and model in price_items_dict:
                 matched_model = model
-                if po_line_number == 2:
-                    logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
-                logging.info(f"Using direct matching model {model} from available options: {unique_models}")
+                logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' from available options: {unique_models}")
                 break
         
-        # If no direct match found, try fallback logic on the PRIMARY extracted model number
+        # Second pass: Look for B-prefixed models (but not BW)
+        if not matched_model:
+            for model in unique_models:
+                if model.startswith("B") and not model.startswith("BW") and model in price_items_dict:
+                    matched_model = model
+                    logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' from available options: {unique_models}")
+                    break
+        
+        # Third pass: Look for direct matches (non-prefixed)
+        if not matched_model:
+            for model in unique_models:
+                if model in price_items_dict and not model.startswith("BW") and not model.startswith("B"):
+                    matched_model = model
+                    if po_line_number == 2:
+                        logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
+                    logging.info(f"Using direct matching model {model} from available options: {unique_models}")
+                    break
+        
+        # Fourth pass: Fallback logic on the PRIMARY extracted model number
         if not matched_model and model_number and model_number != "Unknown Item":
             # Try prepending "BW" to the parsed item number
             bw_prefixed = "BW" + model_number
