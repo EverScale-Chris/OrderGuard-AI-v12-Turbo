@@ -597,14 +597,18 @@ def compare_with_price_book(extracted_data, price_book):
         if "description" in item and item["description"]:
             description = item["description"]
             import re
-            # Find model-like patterns in description
-            model_patterns = re.findall(r'[A-Za-z0-9][-A-Za-z0-9_]{4,}[A-Za-z0-9]', description)
+            # Find model-like patterns in description, including BW-prefixed models
+            model_patterns = re.findall(r'BW[A-Za-z0-9][-A-Za-z0-9_]{4,}[A-Za-z0-9]|[A-Za-z0-9][-A-Za-z0-9_]{4,}[A-Za-z0-9]', description)
             all_potential_models.extend(model_patterns)
             
             # Also check for known model numbers from price book
             for model_number in price_book_model_numbers:
                 if model_number in description:
                     all_potential_models.append(model_number)
+            
+            # Specifically look for BW-prefixed patterns in the description
+            bw_patterns = re.findall(r'BW[A-Z0-9][-A-Z0-9]{6,}', description, re.IGNORECASE)
+            all_potential_models.extend(bw_patterns)
         
         # Remove duplicates while preserving order
         seen = set()
