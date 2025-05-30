@@ -53,9 +53,10 @@ def extract_data_from_pdf(pdf_path):
         - Look for alphanumeric codes that appear in a standardized format (like AB-1234, 123ABC, etc.)
         - Look for codes that are in all caps or have a mix of letters and numbers
         - Look for columns or fields labeled: Item Number, Model, SKU, Part #, Description, Product ID
-        - CRITICAL: If you find multiple model numbers on the same line (e.g., "BWRE250T6-1NCWW RE250T6-1NCWW"), choose the SHORTER one WITHOUT manufacturer prefixes (e.g., choose "RE250T6-1NCWW" over "BWRE250T6-1NCWW")
-        - When you see both "BW..." and "R..." versions of the same model, always choose the "R..." version
-        - If you find more than one potential product identifier, extract the most standardized one without company prefixes
+        - CRITICAL: Extract the COMPLETE model number including ALL suffixes and dashes (e.g., "RE340S6-1NCWW" not just "RE340S6")
+        - If you find multiple model numbers on the same line, extract ALL of them, prioritizing the complete versions with suffixes
+        - Look for complete alphanumeric codes with dashes and suffixes like "ABC123-4DEFG" or "XYZ789-1ABCD"
+        - Do NOT truncate model numbers - capture the full identifier as written
         
         For prices:
         - Look for columns or fields labeled: Unit Price, Price, Base Price, Amount, Extended Price, Each, EA Price
