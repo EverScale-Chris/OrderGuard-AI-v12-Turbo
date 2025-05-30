@@ -640,9 +640,22 @@ def compare_with_price_book(extracted_data, price_book):
             for model in unique_models:
                 if model.startswith("BW"):
                     base_model = model[2:]  # Remove "BW" prefix
+                    # First check for exact match
                     if base_model in price_items_dict:
-                        matched_model = model  # Use the BW version but map to base price
-                        logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to '{base_model}') from available options: {unique_models}")
+                        matched_model = model  # Use the BW version but map to exact base price
+                        logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
+                        break
+                    # If no exact match, look for partial matches but prioritize exact
+                    partial_matches = [pb_model for pb_model in price_items_dict.keys() if pb_model.startswith(base_model)]
+                    if partial_matches:
+                        # Prioritize exact match if it exists in partial matches
+                        if base_model in partial_matches:
+                            matched_model = model  # Use BW version but map to exact base
+                            logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to exact partial '{base_model}') from available options: {unique_models}")
+                        else:
+                            # Use first partial match only if no exact match exists
+                            matched_model = model
+                            logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to partial '{partial_matches[0]}') from available options: {unique_models}")
                         break
         
         # Third pass: Look for B-prefixed models (but not BW)
@@ -681,17 +694,27 @@ def compare_with_price_book(extracted_data, price_book):
                     bw_matches = [pb_model for pb_model in price_items_dict.keys() 
                                  if pb_model.startswith("BW" + model)]
                     if bw_matches:
-                        # Prioritize BW-prefixed partial matches
-                        matched_model = bw_matches[0]  # Take first BW match
-                        logging.info(f"PO line {po_line_number}: Using BW-prefixed partial match '{matched_model}' for extracted '{model}'")
+                        # Prioritize exact BW matches first, then partial BW matches
+                        exact_bw_match = "BW" + model
+                        if exact_bw_match in bw_matches:
+                            matched_model = exact_bw_match
+                            logging.info(f"PO line {po_line_number}: Using exact BW match '{matched_model}' for extracted '{model}'")
+                        else:
+                            matched_model = bw_matches[0]  # Take first BW partial match
+                            logging.info(f"PO line {po_line_number}: Using BW-prefixed partial match '{matched_model}' for extracted '{model}'")
                         break
                     
                     # If no BW matches, look for regular partial matches
                     partial_matches = [pb_model for pb_model in price_items_dict.keys() 
                                      if pb_model.startswith(model) and not pb_model.startswith("BW") and not pb_model.startswith("B")]
                     if partial_matches:
-                        matched_model = partial_matches[0]  # Take first match
-                        logging.info(f"PO line {po_line_number}: Using partial match '{matched_model}' for extracted '{model}'")
+                        # Prioritize exact matches over partial matches
+                        if model in partial_matches:
+                            matched_model = model
+                            logging.info(f"PO line {po_line_number}: Using exact partial match '{matched_model}' for extracted '{model}'")
+                        else:
+                            matched_model = partial_matches[0]  # Take first partial match
+                            logging.info(f"PO line {po_line_number}: Using partial match '{matched_model}' for extracted '{model}'")
                         break
         
         # Fourth pass: Fallback logic on the PRIMARY extracted model number
