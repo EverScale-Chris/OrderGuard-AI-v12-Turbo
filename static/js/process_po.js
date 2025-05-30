@@ -151,7 +151,7 @@ function displayResults(data) {
       </div>
       
       <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
           <div class="card border-0 bg-light rounded-4 h-100">
             <div class="card-body p-3 text-center">
               <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
@@ -164,7 +164,7 @@ function displayResults(data) {
           </div>
         </div>
         
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
           <div class="card border-0 bg-light rounded-4 h-100">
             <div class="card-body p-3 text-center">
               <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
@@ -177,7 +177,7 @@ function displayResults(data) {
           </div>
         </div>
         
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
           <div class="card border-0 bg-light rounded-4 h-100">
             <div class="card-body p-3 text-center">
               <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
@@ -186,6 +186,19 @@ function displayResults(data) {
               </div>
               <h3 class="fw-bold mb-0">${notFoundCount}</h3>
               <p class="small text-muted mb-0">Not Found</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="card border-0 bg-light rounded-4 h-100">
+            <div class="card-body p-3 text-center">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                style="background-color: rgba(255, 59, 48, 0.1); width: 50px; height: 50px;">
+                <i class="fas fa-dollar-sign fa-lg" style="color: var(--app-danger);"></i>
+              </div>
+              <h3 class="fw-bold mb-0">$${(data.total_error_value || 0).toFixed(2)}</h3>
+              <p class="small text-muted mb-0">Total Value of Errors</p>
             </div>
           </div>
         </div>

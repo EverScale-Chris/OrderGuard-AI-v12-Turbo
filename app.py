@@ -527,10 +527,14 @@ def process_purchase_order():
             # Clean up the temporary file
             os.remove(filepath)
             
+            # Calculate total value of errors
+            total_error_value = sum(result.get("error_value", 0) for result in comparison_results)
+            
             return jsonify({
                 "success": True,
                 "email_report": email_report,
-                "comparison_results": comparison_results
+                "comparison_results": comparison_results,
+                "total_error_value": total_error_value
             })
         except Exception as e:
             db.session.rollback()  # Rollback in case of error
@@ -571,9 +575,11 @@ def compare_with_price_book(extracted_data, price_book):
         result = {
             "model": model_number,
             "po_price": item.get("price", "Extraction Issue"),
+            "quantity": item.get("quantity", 1),  # Default to 1 if not found
             "status": "Data Extraction Issue",
             "po_line_number": po_line_number,  # Track PO line number
-            "price_book_row": None  # Initialize price book row to None
+            "price_book_row": None,  # Initialize price book row to None
+            "error_value": 0  # Total dollar amount of error for this line
         }
         
         # Include description if available
@@ -684,11 +690,18 @@ def compare_with_price_book(extracted_data, price_book):
             
             # Compare prices
             try:
-                if float(item["price"]) == float(book_price):
+                po_price = float(item["price"])
+                book_price_float = float(book_price)
+                quantity = float(result["quantity"])
+                
+                if po_price == book_price_float:
                     result["status"] = "Match"
                 else:
                     result["status"] = "Mismatch"
-                    result["discrepancy"] = abs(float(item["price"]) - float(book_price))
+                    price_diff = abs(po_price - book_price_float)
+                    result["discrepancy"] = price_diff
+                    # Calculate total error value: price difference * quantity
+                    result["error_value"] = price_diff * quantity
             except (ValueError, TypeError):
                 # Handle case where price might not be convertible to float
                 result["status"] = "Price Format Error"

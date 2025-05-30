@@ -35,16 +35,18 @@ def extract_data_from_pdf(pdf_path):
         Extract the following information from this Purchase Order PDF:
         - Item Number/Model Number/SKU/Part Number for each line item (look for any identifier that would match a product code)
         - Price listed on the PO for each line item (look for any of these: Unit Price, Base Price, Price, Extended Price)
+        - Quantity for each line item (look for: Qty, Quantity, Qty Ordered, Units, Count, Amount)
         
         Format the output as a JSON array of objects, where each object represents a line item with:
         - "model": the exact item number/model number/SKU as written
         - "price": the price as a number (without currency symbols)
+        - "quantity": the quantity as a number (default to 1 if not found)
         - "description": the full description text if available (this can help with matching)
         
         Example output:
         [
-            {"model": "ABC123", "price": "299.99", "description": "Widget Type A Blue 12-pack"},
-            {"model": "XYZ456", "price": "149.50", "description": "Premium Service Kit (RED-789)"}
+            {"model": "ABC123", "price": "299.99", "quantity": 2, "description": "Widget Type A Blue 12-pack"},
+            {"model": "XYZ456", "price": "149.50", "quantity": 1, "description": "Premium Service Kit (RED-789)"}
         ]
         
         IMPORTANT: For model/item numbers:
