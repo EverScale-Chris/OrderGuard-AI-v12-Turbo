@@ -671,9 +671,22 @@ def compare_with_price_book(extracted_data, price_book):
             for model in unique_models:
                 if model.startswith("B") and not model.startswith("BW"):
                     base_model = model[1:]  # Remove "B" prefix
+                    # First check for exact match
                     if base_model in price_items_dict:
-                        matched_model = model  # Use the B version but map to base price
-                        logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to '{base_model}') from available options: {unique_models}")
+                        matched_model = model  # Use the B version but map to exact base price
+                        logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
+                        break
+                    # If no exact match, look for partial matches but prioritize exact
+                    partial_matches = [pb_model for pb_model in price_items_dict.keys() if pb_model.startswith(base_model)]
+                    if partial_matches:
+                        # Prioritize exact match if it exists in partial matches
+                        if base_model in partial_matches:
+                            matched_model = model  # Use B version but map to exact base
+                            logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to exact partial '{base_model}') from available options: {unique_models}")
+                        else:
+                            # Use first partial match only if no exact match exists
+                            matched_model = model
+                            logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to partial '{partial_matches[0]}') from available options: {unique_models}")
                         break
         
         # Fifth pass: Look for direct matches (non-prefixed)
