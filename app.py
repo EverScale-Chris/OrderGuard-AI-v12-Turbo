@@ -637,41 +637,28 @@ def compare_with_price_book(extracted_data, price_book):
                     else:
                         logging.error(f"LINE 3 DEBUG - BW prefix NO match for: '{stripped}'")
         
-        # Find the BEST model match - prioritize BW prefix removal over direct matches
-        # This ensures we match customer prefixed part numbers to vendor base numbers
-        
-        # First pass: Check for BW prefix matches (highest priority)
+        # Find the FIRST model that exists in our price book (prioritize direct matches)
         for model in unique_models:
-            if model.startswith("BW"):
-                stripped_model = model[2:]  # Remove "BW" prefix
-                if stripped_model in price_items_dict:
-                    matched_model = stripped_model
-                    if po_line_number == 2:
-                        logging.error(f"LINE 2 DEBUG - FOUND BW PREFIX MATCH: {stripped_model} from {model}")
-                    logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'BW' prefix from '{model}'")
-                    break
+            if model in price_items_dict:
+                matched_model = model
+                if po_line_number == 2:
+                    logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
+                logging.info(f"Using direct matching model {model} from available options: {unique_models}")
+                break
         
-        # Second pass: Check for B prefix matches (if no BW match found)
-        if not matched_model:
-            for model in unique_models:
-                if model.startswith("B") and not model.startswith("BW"):
-                    stripped_model = model[1:]  # Remove "B" prefix
-                    if stripped_model in price_items_dict:
-                        matched_model = stripped_model
-                        if po_line_number == 2:
-                            logging.error(f"LINE 2 DEBUG - FOUND B PREFIX MATCH: {stripped_model} from {model}")
-                        logging.info(f"PO line {po_line_number}: Found match '{stripped_model}' after removing 'B' prefix from '{model}'")
-                        break
-        
-        # Third pass: Check for direct matches (lowest priority)
-        if not matched_model:
-            for model in unique_models:
-                if model in price_items_dict:
-                    matched_model = model
-                    if po_line_number == 2:
-                        logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
-                    logging.info(f"Using direct matching model {model} from available options: {unique_models}")
-                    break
+        # If no direct match found, try fallback logic on the PRIMARY extracted model number
+        if not matched_model and model_number and model_number != "Unknown Item":
+            # Try prepending "BW" to the parsed item number
+            bw_prefixed = "BW" + model_number
+            if bw_prefixed in price_items_dict:
+                matched_model = bw_prefixed
+                logging.info(f"PO line {po_line_number}: Found match '{bw_prefixed}' by prepending 'BW' to '{model_number}'")
+            else:
+                # Try prepending "B" to the parsed item number
+                b_prefixed = "B" + model_number
+                if b_prefixed in price_items_dict:
+                    matched_model = b_prefixed
+                    logging.info(f"PO line {po_line_number}: Found match '{b_prefixed}' by prepending 'B' to '{model_number}'")
         
         if po_line_number == 2 and not matched_model:
             logging.error(f"LINE 2 DEBUG - NO MATCH FOUND from {unique_models}")
