@@ -630,6 +630,10 @@ def compare_with_price_book(extracted_data, price_book):
         # Prioritize BW and B prefixed models first
         # First pass: Look for BW-prefixed models that exist in price book
         if po_line_number in [3, 4, 6]:
+            print(f"=== DEBUG LINE {po_line_number} ===")
+            print(f"Extracted models: {unique_models}")
+            print(f"BW models found: {[m for m in unique_models if m.startswith('BW')]}")
+            print(f"BW models in price book: {[m for m in unique_models if m.startswith('BW') and m in price_items_dict]}")
             logging.error(f"=== DEBUG LINE {po_line_number} ===")
             logging.error(f"Extracted models: {unique_models}")
             logging.error(f"BW models found: {[m for m in unique_models if m.startswith('BW')]}")
@@ -652,6 +656,9 @@ def compare_with_price_book(extracted_data, price_book):
                     if base_model in price_items_dict:
                         matched_model = model  # Use the BW version but map to exact base price
                         logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
+                        if po_line_number in [3, 4, 6]:
+                            print(f"=== LINE {po_line_number} MATCHED BW->BASE: {model} -> {base_model} ===")
+                            logging.error(f"=== LINE {po_line_number} MATCHED BW->BASE: {model} -> {base_model} ===")
                         break
                     # No partial matches - only exact matches are allowed
         
