@@ -660,7 +660,44 @@ def compare_with_price_book(extracted_data, price_book):
                         logging.info(f"PO line {po_line_number}: STEP 3 - B model '{model}' maps to price book '{base_model}'")
                         break
         
-        # STEP 4: If no matches found, it will be marked as "NOT FOUND"
+        # STEP 4: Dash-removal fallback search - try matching without dashes
+        if not matched_model:
+            # Create a mapping of dash-removed models to original models from price book
+            dashless_price_book = {}
+            for original_model in price_items_dict.keys():
+                dashless_model = original_model.replace("-", "")
+                dashless_price_book[dashless_model] = original_model
+            
+            # Try all extracted models with dashes removed
+            for model in unique_models:
+                dashless_extracted = model.replace("-", "")
+                if dashless_extracted in dashless_price_book:
+                    matched_model = model  # Show original extracted model
+                    lookup_model_for_dash = dashless_price_book[dashless_extracted]  # Use original price book model
+                    logging.info(f"PO line {po_line_number}: STEP 4 - Dash-removal match '{model}' maps to price book '{lookup_model_for_dash}'")
+                    break
+                
+                # Also try BW prefix removal + dash removal
+                if model.startswith("BW"):
+                    base_model_no_bw = model[2:]  # Remove BW
+                    dashless_base = base_model_no_bw.replace("-", "")
+                    if dashless_base in dashless_price_book:
+                        matched_model = model  # Show BW model
+                        lookup_model_for_dash = dashless_price_book[dashless_base]
+                        logging.info(f"PO line {po_line_number}: STEP 4 - BW + dash-removal match '{model}' (base: '{base_model_no_bw}') maps to price book '{lookup_model_for_dash}'")
+                        break
+                
+                # Also try B prefix removal + dash removal
+                if model.startswith("B") and not model.startswith("BW"):
+                    base_model_no_b = model[1:]  # Remove B
+                    dashless_base = base_model_no_b.replace("-", "")
+                    if dashless_base in dashless_price_book:
+                        matched_model = model  # Show B model
+                        lookup_model_for_dash = dashless_price_book[dashless_base]
+                        logging.info(f"PO line {po_line_number}: STEP 4 - B + dash-removal match '{model}' (base: '{base_model_no_b}') maps to price book '{lookup_model_for_dash}'")
+                        break
+        
+        # STEP 5: If no matches found, it will be marked as "NOT FOUND"
         
 
         
@@ -673,9 +710,13 @@ def compare_with_price_book(extracted_data, price_book):
             result["model"] = matched_model
             logging.debug(f"PO line {po_line_number}: Found match for '{matched_model}' (original model: '{model_number}')")
             
-            # Handle BW/B prefixed models that map to base models
+            # Handle BW/B prefixed models and dash-removal matches
             lookup_model = matched_model
-            if matched_model.startswith("BW"):
+            
+            # Check if we used dash-removal matching (lookup_model_for_dash was set)
+            if 'lookup_model_for_dash' in locals():
+                lookup_model = lookup_model_for_dash
+            elif matched_model.startswith("BW"):
                 # For BW models, always look up price using base model (without BW)
                 lookup_model = matched_model[2:]  # Remove BW prefix for price lookup
             elif matched_model.startswith("B") and not matched_model.startswith("BW"):
