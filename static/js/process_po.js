@@ -208,13 +208,13 @@ function displayResults(data) {
           <table class="table table-hover mb-0">
             <thead style="background-color: var(--app-gray);">
               <tr>
+                <th class="px-4 py-3 text-center">PO Line</th>
                 <th class="px-4 py-3 text-nowrap">Model Number</th>
                 <th class="px-4 py-3">Status</th>
                 <th class="px-4 py-3 text-end">PO Price</th>
                 <th class="px-4 py-3 text-end">Book Price</th>
                 <th class="px-4 py-3 text-end">Difference</th>
                 <th class="px-4 py-3 text-center">Source Column</th>
-                <th class="px-4 py-3 text-center">PO Line</th>
                 <th class="px-4 py-3 text-center">Book Row</th>
               </tr>
             </thead>
@@ -308,6 +308,9 @@ function displayResults(data) {
     
     html += `
       <tr class="border-bottom">
+        <td class="px-4 py-3 align-middle text-center">
+          <span class="badge bg-success-subtle text-success">${poLineNumber}</span>
+        </td>
         <td class="px-4 py-3 align-middle">
           <div class="d-flex align-items-center">
             <i class="fas fa-barcode me-2 text-muted"></i>
@@ -324,9 +327,6 @@ function displayResults(data) {
         </td>
         <td class="px-4 py-3 align-middle text-center">
           ${sourceColumnBadge}
-        </td>
-        <td class="px-4 py-3 align-middle text-center">
-          <span class="badge bg-success-subtle text-success">${poLineNumber}</span>
         </td>
         <td class="px-4 py-3 align-middle text-center">
           <span class="badge bg-light text-dark">${priceBookRow}</span>
