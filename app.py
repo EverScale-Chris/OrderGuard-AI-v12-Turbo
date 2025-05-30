@@ -553,14 +553,20 @@ def compare_with_price_book(extracted_data, price_book):
     price_items = PriceItem.query.filter_by(price_book_id=price_book_id).all()
     
     # Create a dictionary to lookup price, Excel row number, and source column
+    # CRITICAL: Only use the FIRST occurrence of each model number to prevent wrong line matching
     price_items_dict = {}
     for item in price_items:
         logging.debug(f"Item {item.model_number}: excel_row={item.excel_row}, source_column={item.source_column}")
-        price_items_dict[item.model_number] = {
-            "price": item.price,
-            "excel_row": item.excel_row,  # Keep the actual value, don't convert to "Unknown"
-            "source_column": item.source_column or "Unknown"  # Include source column info
-        }
+        # Only add if we haven't seen this model number before
+        if item.model_number not in price_items_dict:
+            price_items_dict[item.model_number] = {
+                "price": item.price,
+                "excel_row": item.excel_row,  # Keep the actual value, don't convert to "Unknown"
+                "source_column": item.source_column or "Unknown"  # Include source column info
+            }
+            logging.debug(f"FIRST occurrence of {item.model_number} at row {item.excel_row}")
+        else:
+            logging.warning(f"DUPLICATE model {item.model_number} at row {item.excel_row} - IGNORED (keeping first occurrence at row {price_items_dict[item.model_number]['excel_row']})")
     
     for po_line_number, item in enumerate(extracted_data, 1):
         logging.debug(f"PO line {po_line_number}: Raw extracted data = {item}")
