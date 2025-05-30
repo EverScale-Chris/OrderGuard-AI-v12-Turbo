@@ -614,11 +614,11 @@ def compare_with_price_book(extracted_data, price_book):
                 seen.add(model)
                 unique_models.append(model)
         
-        # Special detailed logging for line 2 to debug the specific issue
-        if po_line_number == 2:
-            logging.error(f"LINE 2 DEBUG - Raw item data: {item}")
-            logging.error(f"LINE 2 DEBUG - All potential models: {unique_models}")
-            logging.error(f"LINE 2 DEBUG - Price book contains these models: {list(price_items_dict.keys())[:10]}...")  # Show first 10
+        # Special detailed logging for lines 2, 3, and 4 to debug the specific issue
+        if po_line_number in [2, 3, 4]:
+            logging.error(f"LINE {po_line_number} DEBUG - Raw item data: {item}")
+            logging.error(f"LINE {po_line_number} DEBUG - All potential models: {unique_models}")
+            logging.error(f"LINE {po_line_number} DEBUG - Price book contains these models: {list(price_items_dict.keys())[:10]}...")  # Show first 10
         
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
@@ -668,6 +668,27 @@ def compare_with_price_book(extracted_data, price_book):
                         logging.error(f"LINE 2 DEBUG - FOUND DIRECT MATCH: {model}")
                     logging.info(f"Using direct matching model {model} from available options: {unique_models}")
                     break
+        
+        # Sixth pass: Look for partial matches (when extracted model is a prefix of models in price book)
+        if not matched_model:
+            for model in unique_models:
+                if not model.startswith("BW") and not model.startswith("B"):
+                    # Find BW-prefixed models that start with this partial model
+                    bw_matches = [pb_model for pb_model in price_items_dict.keys() 
+                                 if pb_model.startswith("BW" + model)]
+                    if bw_matches:
+                        # Prioritize BW-prefixed partial matches
+                        matched_model = bw_matches[0]  # Take first BW match
+                        logging.info(f"PO line {po_line_number}: Using BW-prefixed partial match '{matched_model}' for extracted '{model}'")
+                        break
+                    
+                    # If no BW matches, look for regular partial matches
+                    partial_matches = [pb_model for pb_model in price_items_dict.keys() 
+                                     if pb_model.startswith(model) and not pb_model.startswith("BW") and not pb_model.startswith("B")]
+                    if partial_matches:
+                        matched_model = partial_matches[0]  # Take first match
+                        logging.info(f"PO line {po_line_number}: Using partial match '{matched_model}' for extracted '{model}'")
+                        break
         
         # Fourth pass: Fallback logic on the PRIMARY extracted model number
         if not matched_model and model_number and model_number != "Unknown Item":
