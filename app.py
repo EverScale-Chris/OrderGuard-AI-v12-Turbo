@@ -762,6 +762,12 @@ def compare_with_price_book(extracted_data, price_book):
                 # Handle case where price might not be convertible to float
                 result["status"] = "Price Format Error"
         else:
+            # No match found - but check if we should show a BW model anyway
+            bw_models = [m for m in unique_models if m.startswith("BW")]
+            if bw_models:
+                # Prioritize showing BW model even if not in price book
+                result["model"] = bw_models[0]
+                logging.info(f"PO line {po_line_number}: No price book match, showing BW model '{bw_models[0]}' from extracted models: {unique_models}")
             result["status"] = "Model Not Found"
         
         results.append(result)
