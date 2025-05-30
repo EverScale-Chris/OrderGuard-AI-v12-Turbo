@@ -645,18 +645,7 @@ def compare_with_price_book(extracted_data, price_book):
                         matched_model = model  # Use the BW version but map to exact base price
                         logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
                         break
-                    # If no exact match, look for partial matches but prioritize exact
-                    partial_matches = [pb_model for pb_model in price_items_dict.keys() if pb_model.startswith(base_model)]
-                    if partial_matches:
-                        # Prioritize exact match if it exists in partial matches
-                        if base_model in partial_matches:
-                            matched_model = model  # Use BW version but map to exact base
-                            logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to exact partial '{base_model}') from available options: {unique_models}")
-                        else:
-                            # Use first partial match only if no exact match exists
-                            matched_model = model
-                            logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to partial '{partial_matches[0]}') from available options: {unique_models}")
-                        break
+                    # No partial matches - only exact matches are allowed
         
         # Third pass: Look for B-prefixed models (but not BW)
         if not matched_model:
@@ -676,18 +665,7 @@ def compare_with_price_book(extracted_data, price_book):
                         matched_model = model  # Use the B version but map to exact base price
                         logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to exact '{base_model}') from available options: {unique_models}")
                         break
-                    # If no exact match, look for partial matches but prioritize exact
-                    partial_matches = [pb_model for pb_model in price_items_dict.keys() if pb_model.startswith(base_model)]
-                    if partial_matches:
-                        # Prioritize exact match if it exists in partial matches
-                        if base_model in partial_matches:
-                            matched_model = model  # Use B version but map to exact base
-                            logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to exact partial '{base_model}') from available options: {unique_models}")
-                        else:
-                            # Use first partial match only if no exact match exists
-                            matched_model = model
-                            logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to partial '{partial_matches[0]}') from available options: {unique_models}")
-                        break
+                    # No partial matches - only exact matches are allowed
         
         # Fifth pass: Look for direct matches (non-prefixed)
         if not matched_model:
@@ -699,35 +677,15 @@ def compare_with_price_book(extracted_data, price_book):
                     logging.info(f"Using direct matching model {model} from available options: {unique_models}")
                     break
         
-        # Sixth pass: Look for partial matches (when extracted model is a prefix of models in price book)
+        # Sixth pass: Look for exact BW prefix matches only (no partial matches)
         if not matched_model:
             for model in unique_models:
                 if not model.startswith("BW") and not model.startswith("B"):
-                    # Find BW-prefixed models that start with this partial model
-                    bw_matches = [pb_model for pb_model in price_items_dict.keys() 
-                                 if pb_model.startswith("BW" + model)]
-                    if bw_matches:
-                        # Prioritize exact BW matches first, then partial BW matches
-                        exact_bw_match = "BW" + model
-                        if exact_bw_match in bw_matches:
-                            matched_model = exact_bw_match
-                            logging.info(f"PO line {po_line_number}: Using exact BW match '{matched_model}' for extracted '{model}'")
-                        else:
-                            matched_model = bw_matches[0]  # Take first BW partial match
-                            logging.info(f"PO line {po_line_number}: Using BW-prefixed partial match '{matched_model}' for extracted '{model}'")
-                        break
-                    
-                    # If no BW matches, look for regular partial matches
-                    partial_matches = [pb_model for pb_model in price_items_dict.keys() 
-                                     if pb_model.startswith(model) and not pb_model.startswith("BW") and not pb_model.startswith("B")]
-                    if partial_matches:
-                        # Prioritize exact matches over partial matches
-                        if model in partial_matches:
-                            matched_model = model
-                            logging.info(f"PO line {po_line_number}: Using exact partial match '{matched_model}' for extracted '{model}'")
-                        else:
-                            matched_model = partial_matches[0]  # Take first partial match
-                            logging.info(f"PO line {po_line_number}: Using partial match '{matched_model}' for extracted '{model}'")
+                    # Find exact BW-prefixed models only
+                    exact_bw_match = "BW" + model
+                    if exact_bw_match in price_items_dict:
+                        matched_model = exact_bw_match
+                        logging.info(f"PO line {po_line_number}: Using exact BW match '{matched_model}' for extracted '{model}'")
                         break
         
         # Fourth pass: Fallback logic on the PRIMARY extracted model number
