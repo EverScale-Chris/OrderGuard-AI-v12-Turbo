@@ -639,14 +639,24 @@ def compare_with_price_book(extracted_data, price_book):
                         logging.error(f"LINE 3 DEBUG - BW prefix NO match for: '{stripped}'")
         
         # Prioritize BW and B prefixed models first
-        # First pass: Look for BW-prefixed models
+        # First pass: Look for BW-prefixed models that exist in price book
         for model in unique_models:
             if model.startswith("BW") and model in price_items_dict:
                 matched_model = model
                 logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' from available options: {unique_models}")
                 break
         
-        # Second pass: Look for B-prefixed models (but not BW)
+        # Second pass: Look for BW-prefixed models that map to base models in price book
+        if not matched_model:
+            for model in unique_models:
+                if model.startswith("BW"):
+                    base_model = model[2:]  # Remove "BW" prefix
+                    if base_model in price_items_dict:
+                        matched_model = model  # Use the BW version but map to base price
+                        logging.info(f"PO line {po_line_number}: Using BW-prefixed model '{model}' (maps to '{base_model}') from available options: {unique_models}")
+                        break
+        
+        # Third pass: Look for B-prefixed models (but not BW)
         if not matched_model:
             for model in unique_models:
                 if model.startswith("B") and not model.startswith("BW") and model in price_items_dict:
@@ -654,7 +664,17 @@ def compare_with_price_book(extracted_data, price_book):
                     logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' from available options: {unique_models}")
                     break
         
-        # Third pass: Look for direct matches (non-prefixed)
+        # Fourth pass: Look for B-prefixed models that map to base models in price book
+        if not matched_model:
+            for model in unique_models:
+                if model.startswith("B") and not model.startswith("BW"):
+                    base_model = model[1:]  # Remove "B" prefix
+                    if base_model in price_items_dict:
+                        matched_model = model  # Use the B version but map to base price
+                        logging.info(f"PO line {po_line_number}: Using B-prefixed model '{model}' (maps to '{base_model}') from available options: {unique_models}")
+                        break
+        
+        # Fifth pass: Look for direct matches (non-prefixed)
         if not matched_model:
             for model in unique_models:
                 if model in price_items_dict and not model.startswith("BW") and not model.startswith("B"):
@@ -686,7 +706,15 @@ def compare_with_price_book(extracted_data, price_book):
             # Update the result model to show the matched model, not the original extracted model
             result["model"] = matched_model
             logging.debug(f"PO line {po_line_number}: Found match for '{matched_model}' (original model: '{model_number}')")
-            item_data = price_items_dict[matched_model]
+            
+            # Handle BW/B prefixed models that map to base models
+            lookup_model = matched_model
+            if matched_model.startswith("BW") and matched_model not in price_items_dict:
+                lookup_model = matched_model[2:]  # Remove BW prefix for price lookup
+            elif matched_model.startswith("B") and not matched_model.startswith("BW") and matched_model not in price_items_dict:
+                lookup_model = matched_model[1:]  # Remove B prefix for price lookup
+            
+            item_data = price_items_dict[lookup_model]
             book_price = item_data["price"]
             result["book_price"] = book_price
             result["price_book_row"] = item_data["excel_row"]  # Use actual Excel row number
