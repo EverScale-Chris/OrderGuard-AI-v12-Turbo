@@ -629,15 +629,13 @@ def compare_with_price_book(extracted_data, price_book):
 
         # Prioritize BW and B prefixed models first
         # First pass: Look for BW-prefixed models that exist in price book
-        if po_line_number in [3, 4, 6]:
-            print(f"=== DEBUG LINE {po_line_number} ===")
-            print(f"Extracted models: {unique_models}")
-            print(f"BW models found: {[m for m in unique_models if m.startswith('BW')]}")
-            print(f"BW models in price book: {[m for m in unique_models if m.startswith('BW') and m in price_items_dict]}")
-            logging.error(f"=== DEBUG LINE {po_line_number} ===")
-            logging.error(f"Extracted models: {unique_models}")
-            logging.error(f"BW models found: {[m for m in unique_models if m.startswith('BW')]}")
-            logging.error(f"BW models in price book: {[m for m in unique_models if m.startswith('BW') and m in price_items_dict]}")
+        if po_line_number <= 6:
+            with open('/tmp/debug_lines.txt', 'a') as f:
+                f.write(f"=== LINE {po_line_number} DEBUG ===\n")
+                f.write(f"Extracted models: {unique_models}\n")
+                f.write(f"BW models found: {[m for m in unique_models if m.startswith('BW')]}\n")
+                f.write(f"Price book keys: {list(price_items_dict.keys())[:20]}\n")
+                f.write(f"BW models in price book: {[m for m in unique_models if m.startswith('BW') and m in price_items_dict]}\n\n")
         
         for model in unique_models:
             if model.startswith("BW") and model in price_items_dict:
