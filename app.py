@@ -41,10 +41,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Import models and create tables
-from models import User, PriceBook, PriceItem, ProcessedPO, POLineItem
-
+# Import models inside app context to avoid circular imports
 with app.app_context():
+    from models import User, PriceBook, PriceItem, ProcessedPO, POLineItem
     db.create_all()
 
 @login_manager.user_loader
