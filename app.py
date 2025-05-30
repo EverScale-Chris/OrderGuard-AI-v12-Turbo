@@ -673,14 +673,15 @@ def compare_with_price_book(extracted_data, price_book):
                 dashless_extracted = model.replace("-", "")
                 if dashless_extracted in dashless_price_book:
                     original_price_book_model = dashless_price_book[dashless_extracted]
-                    # Safety check: only allow dash-removal matches if the lengths are similar (within 2 characters)
-                    if abs(len(model) - len(original_price_book_model)) <= 2:
+                    # CRITICAL: Only allow if they are EXACTLY the same when dashes are removed
+                    # The only difference should be the presence/absence of dashes
+                    if dashless_extracted == original_price_book_model.replace("-", ""):
                         matched_model = model  # Show original extracted model
                         lookup_model_for_dash = original_price_book_model  # Use original price book model
                         logging.info(f"PO line {po_line_number}: STEP 4 - Dash-removal match '{model}' maps to price book '{lookup_model_for_dash}'")
                         break
                     else:
-                        logging.warning(f"PO line {po_line_number}: REJECTED dash-removal match '{model}' to '{original_price_book_model}' - length difference too large ({len(model)} vs {len(original_price_book_model)})")
+                        logging.warning(f"PO line {po_line_number}: REJECTED dash-removal match '{model}' to '{original_price_book_model}' - not identical when dashes removed")
                         continue
                 
                 # Also try BW prefix removal + dash removal
@@ -689,14 +690,14 @@ def compare_with_price_book(extracted_data, price_book):
                     dashless_base = base_model_no_bw.replace("-", "")
                     if dashless_base in dashless_price_book:
                         original_price_book_model = dashless_price_book[dashless_base]
-                        # Safety check for BW prefix + dash removal
-                        if abs(len(base_model_no_bw) - len(original_price_book_model)) <= 2:
+                        # CRITICAL: Only allow if they are EXACTLY the same when dashes are removed
+                        if dashless_base == original_price_book_model.replace("-", ""):
                             matched_model = model  # Show BW model
                             lookup_model_for_dash = original_price_book_model
                             logging.info(f"PO line {po_line_number}: STEP 4 - BW + dash-removal match '{model}' (base: '{base_model_no_bw}') maps to price book '{lookup_model_for_dash}'")
                             break
                         else:
-                            logging.warning(f"PO line {po_line_number}: REJECTED BW + dash-removal match '{model}' to '{original_price_book_model}' - length difference too large")
+                            logging.warning(f"PO line {po_line_number}: REJECTED BW + dash-removal match '{model}' to '{original_price_book_model}' - not identical when dashes removed")
                             continue
                 
                 # Also try B prefix removal + dash removal
@@ -705,14 +706,14 @@ def compare_with_price_book(extracted_data, price_book):
                     dashless_base = base_model_no_b.replace("-", "")
                     if dashless_base in dashless_price_book:
                         original_price_book_model = dashless_price_book[dashless_base]
-                        # Safety check for B prefix + dash removal
-                        if abs(len(base_model_no_b) - len(original_price_book_model)) <= 2:
+                        # CRITICAL: Only allow if they are EXACTLY the same when dashes are removed
+                        if dashless_base == original_price_book_model.replace("-", ""):
                             matched_model = model  # Show B model
                             lookup_model_for_dash = original_price_book_model
                             logging.info(f"PO line {po_line_number}: STEP 4 - B + dash-removal match '{model}' (base: '{base_model_no_b}') maps to price book '{lookup_model_for_dash}'")
                             break
                         else:
-                            logging.warning(f"PO line {po_line_number}: REJECTED B + dash-removal match '{model}' to '{original_price_book_model}' - length difference too large")
+                            logging.warning(f"PO line {po_line_number}: REJECTED B + dash-removal match '{model}' to '{original_price_book_model}' - not identical when dashes removed")
                             continue
         
         # STEP 5: If no matches found, it will be marked as "NOT FOUND"
