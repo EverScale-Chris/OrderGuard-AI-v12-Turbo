@@ -749,11 +749,23 @@ def compare_with_price_book(extracted_data, price_book):
                 # For B models, always look up price using base model (without B)
                 lookup_model = matched_model[1:]  # Remove B prefix for price lookup
             
+            # CRITICAL DEBUG: Log exactly what we're looking up
+            logging.error(f"PO line {po_line_number}: LOOKUP DEBUG - matched_model='{matched_model}', lookup_model='{lookup_model}', lookup_model_for_dash='{lookup_model_for_dash}'")
+            
+            if lookup_model not in price_items_dict:
+                logging.error(f"PO line {po_line_number}: CRITICAL ERROR - lookup_model '{lookup_model}' NOT FOUND in price_items_dict")
+                result["status"] = "Lookup Error"
+                results.append(result)
+                continue
+                
             item_data = price_items_dict[lookup_model]
             book_price = item_data["price"]
             result["book_price"] = book_price
             result["price_book_row"] = item_data["excel_row"]  # Use actual Excel row number
             result["source_column"] = item_data["source_column"]  # Include source column info
+            
+            # CRITICAL DEBUG: Log the actual data we retrieved
+            logging.error(f"PO line {po_line_number}: RETRIEVED DATA - price={book_price}, row={item_data['excel_row']}, column={item_data['source_column']}")
             
             # Compare prices
             try:
