@@ -631,11 +631,7 @@ def compare_with_price_book(extracted_data, price_book):
                 seen.add(model)
                 unique_models.append(model)
         
-        # Special detailed logging for lines 2, 3, and 4 to debug the specific issue
-        if po_line_number in [2, 3, 4]:
-            logging.error(f"LINE {po_line_number} DEBUG - Raw item data: {item}")
-            logging.error(f"LINE {po_line_number} DEBUG - All potential models: {unique_models}")
-            logging.error(f"LINE {po_line_number} DEBUG - Price book contains these models: {list(price_items_dict.keys())[:10]}...")  # Show first 10
+
         
         logging.debug(f"PO line {po_line_number}: All potential models found: {unique_models}")
         
@@ -727,14 +723,13 @@ def compare_with_price_book(extracted_data, price_book):
         
 
         
-        if po_line_number == 2 and not matched_model:
-            logging.error(f"LINE 2 DEBUG - NO MATCH FOUND from {unique_models}")
+
         
         # If we found a match, compare prices
         if matched_model:
             # Update the result model to show the matched model, not the original extracted model
             result["model"] = matched_model
-            logging.debug(f"PO line {po_line_number}: Found match for '{matched_model}' (original model: '{model_number}')")
+            logging.debug(f"PO line {po_line_number}: Found match for '{matched_model}'")
             
             # Handle BW/B prefixed models and dash-removal matches
             lookup_model = matched_model
@@ -749,11 +744,8 @@ def compare_with_price_book(extracted_data, price_book):
                 # For B models, always look up price using base model (without B)
                 lookup_model = matched_model[1:]  # Remove B prefix for price lookup
             
-            # CRITICAL DEBUG: Log exactly what we're looking up
-            logging.error(f"PO line {po_line_number}: LOOKUP DEBUG - matched_model='{matched_model}', lookup_model='{lookup_model}', lookup_model_for_dash='{lookup_model_for_dash}'")
-            
             if lookup_model not in price_items_dict:
-                logging.error(f"PO line {po_line_number}: CRITICAL ERROR - lookup_model '{lookup_model}' NOT FOUND in price_items_dict")
+                logging.error(f"PO line {po_line_number}: lookup_model '{lookup_model}' not found in price book")
                 result["status"] = "Lookup Error"
                 results.append(result)
                 continue
@@ -761,11 +753,8 @@ def compare_with_price_book(extracted_data, price_book):
             item_data = price_items_dict[lookup_model]
             book_price = item_data["price"]
             result["book_price"] = book_price
-            result["price_book_row"] = item_data["excel_row"]  # Use actual Excel row number
-            result["source_column"] = item_data["source_column"]  # Include source column info
-            
-            # CRITICAL DEBUG: Log the actual data we retrieved
-            logging.error(f"PO line {po_line_number}: RETRIEVED DATA - price={book_price}, row={item_data['excel_row']}, column={item_data['source_column']}")
+            result["price_book_row"] = item_data["excel_row"]
+            result["source_column"] = item_data["source_column"]
             
             # Compare prices
             try:
