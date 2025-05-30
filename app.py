@@ -599,6 +599,7 @@ def compare_with_price_book(extracted_data, price_book):
         
         # Check all potential model numbers found in the line (both primary and in description)
         matched_model = None
+        lookup_model_for_dash = None  # Reset this for each line to prevent cross-contamination
         all_potential_models = []
         
         # Add the primary extracted model
@@ -739,7 +740,7 @@ def compare_with_price_book(extracted_data, price_book):
             lookup_model = matched_model
             
             # Check if we used dash-removal matching (lookup_model_for_dash was set)
-            if 'lookup_model_for_dash' in locals():
+            if lookup_model_for_dash is not None:
                 lookup_model = lookup_model_for_dash
             elif matched_model.startswith("BW"):
                 # For BW models, always look up price using base model (without BW)
