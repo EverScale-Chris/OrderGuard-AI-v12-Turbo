@@ -628,17 +628,8 @@ def compare_with_price_book(extracted_data, price_book):
         
 
         # STEP 1: Direct exact matches first - use any model that matches exactly as-is
-        # But prioritize BW/B models if they exist in extracted models
-        bw_models_in_extracted = [m for m in unique_models if m.startswith("BW")]
-        b_models_in_extracted = [m for m in unique_models if m.startswith("B") and not m.startswith("BW")]
-        
         for model in unique_models:
             if model in price_items_dict:
-                # If we found a BW or B model in extracted, skip non-prefixed versions
-                if not model.startswith("BW") and not model.startswith("B"):
-                    if bw_models_in_extracted or b_models_in_extracted:
-                        continue  # Skip this, we'll handle prefixed models in steps 2-3
-                
                 matched_model = model
                 logging.info(f"PO line {po_line_number}: STEP 1 - Direct exact match '{model}'")
                 break
