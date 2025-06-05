@@ -1,0 +1,217 @@
+# =============================================================================
+# OrderGuard AI Pro - Environment Configuration Template
+# =============================================================================
+# COPY THIS TO .env AND FILL IN YOUR ACTUAL VALUES
+# NEVER COMMIT .env TO VERSION CONTROL!
+# =============================================================================
+
+# =============================================================================
+# FLASK APPLICATION CONFIGURATION
+# =============================================================================
+FLASK_APP=app.py
+FLASK_ENV=development
+FLASK_DEBUG=true
+
+# Flask Secret Key (generate a strong random key)
+# Python: import secrets; secrets.token_hex(32)
+SECRET_KEY=your_super_secret_flask_key_here_generate_a_strong_one
+
+# =============================================================================
+# SUPABASE CONFIGURATION (Phase 1-2)
+# =============================================================================
+# Get these from your Supabase Dashboard > Project Settings > API
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_KEY=your_supabase_service_role_key_here
+
+# Supabase Database Connection (if needed for direct access)
+SUPABASE_DB_PASSWORD=your_database_password_here
+
+# =============================================================================
+# AI & MACHINE LEARNING APIS (Phase 1+)
+# =============================================================================
+# Enable AI features throughout the application
+ENABLE_AI_FEATURES=true
+
+# Google Generative AI (Gemini) - get from https://makersuite.google.com/app/apikey
+GOOGLE_API_KEY=your_google_generative_ai_api_key_here
+
+# OpenAI API - get from https://platform.openai.com/api-keys
+OPENAI_API_KEY=your_openai_api_key_here
+
+# =============================================================================
+# STRIPE PAYMENT CONFIGURATION (Phase 5)
+# =============================================================================
+# Get these from your Stripe Dashboard > Developers > API keys
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+
+# Stripe Webhook Endpoint Secret (for webhook verification)
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Product IDs from Stripe Dashboard
+STRIPE_STARTER_PRICE_ID=price_your_starter_plan_price_id
+STRIPE_PROFESSIONAL_PRICE_ID=price_your_professional_plan_price_id
+STRIPE_ENTERPRISE_PRICE_ID=price_your_enterprise_plan_price_id
+
+# =============================================================================
+# EMAIL SERVICE CONFIGURATION (Phase 3+)
+# =============================================================================
+# SendGrid API - get from https://app.sendgrid.com/settings/api_keys
+SENDGRID_API_KEY=SG.your_sendgrid_api_key_here
+
+# Email sender configuration
+FROM_EMAIL=noreply@yourdomain.com
+FROM_NAME=OrderGuard AI Pro
+
+# Email templates
+WELCOME_EMAIL_TEMPLATE_ID=d-your_welcome_template_id
+INVITATION_EMAIL_TEMPLATE_ID=d-your_invitation_template_id
+PASSWORD_RESET_TEMPLATE_ID=d-your_password_reset_template_id
+
+# =============================================================================
+# AUTHENTICATION CONFIGURATION (Phase 3)
+# =============================================================================
+# JWT configuration for session management
+JWT_SECRET_KEY=your_jwt_secret_key_here_make_it_strong
+JWT_ACCESS_TOKEN_EXPIRES=86400
+
+# OAuth providers (optional)
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+
+# =============================================================================
+# FILE STORAGE & UPLOADS (Phase 4+)
+# =============================================================================
+# Supabase Storage bucket for file uploads
+SUPABASE_STORAGE_BUCKET=orderguard-uploads
+
+# Maximum file upload size (in bytes)
+MAX_CONTENT_LENGTH=16777216
+
+# Allowed file extensions
+ALLOWED_EXTENSIONS=xlsx,xls,csv,pdf
+
+# =============================================================================
+# MONITORING & ANALYTICS (Phase 6+)
+# =============================================================================
+# Sentry for error tracking - get from https://sentry.io/
+SENTRY_DSN=your_sentry_dsn_here
+
+# Google Analytics
+GA_TRACKING_ID=GA-your_tracking_id
+
+# PostHog for product analytics
+POSTHOG_API_KEY=your_posthog_api_key
+POSTHOG_HOST=https://app.posthog.com
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+# Database configuration for testing
+TEST_DATABASE_URL=sqlite:///test.db
+
+# Development flags
+DEBUG_SQL=false
+ENABLE_PROFILING=false
+
+# Testing configuration
+TESTING=false
+WTF_CSRF_ENABLED=false
+
+# =============================================================================
+# PRODUCTION CONFIGURATION
+# =============================================================================
+# Set to 'production' when deploying
+ENVIRONMENT=development
+
+# Production database (will override Supabase in production if needed)
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Redis for caching (optional)
+REDIS_URL=redis://localhost:6379/0
+
+# =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+# Enable/disable features during development and rollout
+ENABLE_USER_REGISTRATION=true
+ENABLE_ORGANIZATION_INVITES=true
+ENABLE_BULK_PROCESSING=true
+ENABLE_ANALYTICS_DASHBOARD=true
+ENABLE_ADMIN_PANEL=true
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+# CORS origins (comma-separated)
+CORS_ORIGINS=http://localhost:3000,http://localhost:5000
+
+# Session configuration
+SESSION_COOKIE_SECURE=false
+SESSION_COOKIE_HTTPONLY=true
+SESSION_COOKIE_SAMESITE=Lax
+
+# Rate limiting
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_PER_MINUTE=60
+
+# =============================================================================
+# DEPLOYMENT CONFIGURATION
+# =============================================================================
+# Application URL (used for webhooks and redirects)
+APP_URL=http://localhost:5000
+
+# Workers and scaling
+WEB_CONCURRENCY=2
+WORKER_CONNECTIONS=1000
+
+# Health check endpoint
+HEALTH_CHECK_PATH=/health
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+LOG_LEVEL=INFO
+LOG_FORMAT=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+
+# =============================================================================
+# BACKUP & MAINTENANCE
+# =============================================================================
+# Backup configuration
+BACKUP_ENABLED=false
+BACKUP_SCHEDULE=0 2 * * *
+BACKUP_RETENTION_DAYS=30
+
+# Maintenance mode
+MAINTENANCE_MODE=false
+MAINTENANCE_MESSAGE=OrderGuard AI Pro is currently undergoing maintenance. Please check back soon.
+
+# =============================================================================
+# WEBHOOKS & INTEGRATIONS
+# =============================================================================
+# Webhook URLs for external integrations
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/your/slack/webhook
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your/discord/webhook
+
+# =============================================================================
+# PRIORITY SETUP FOR PHASE 3 (Authentication Migration)
+# =============================================================================
+# Start with these essential keys:
+# 1. SUPABASE_URL=https://qrifxhdijxxjyzvsdszt.supabase.co
+# 2. SUPABASE_ANON_KEY=(get from Supabase Dashboard)
+# 3. SUPABASE_SERVICE_KEY=(get from Supabase Dashboard)  
+# 4. SECRET_KEY=(generate with: python -c "import secrets; print(secrets.token_hex(32))")
+# 5. GOOGLE_API_KEY=(for existing AI features)
+
+# =============================================================================
+# SETUP INSTRUCTIONS
+# =============================================================================
+# 1. Create .env file: touch .env
+# 2. Copy this template content to .env
+# 3. Get Supabase keys from: https://supabase.com/dashboard/project/qrifxhdijxxjyzvsdszt/settings/api
+# 4. Generate Flask secret: python -c "import secrets; print(secrets.token_hex(32))"
+# 5. Get Google AI API key from: https://makersuite.google.com/app/apikey
+# 6. Add other keys as needed for future phases
+# 7. NEVER commit .env to git!
+# ============================================================================= 

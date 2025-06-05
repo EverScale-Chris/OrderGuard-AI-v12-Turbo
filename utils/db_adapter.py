@@ -50,6 +50,17 @@ class DatabaseAdapter:
         self._edge_functions_enabled = False
         print("🔙 Switched back to SQLAlchemy mode")
     
+    def set_mode(self, mode: DatabaseMode):
+        """Set database mode directly (for testing and manual control)"""
+        if mode == DatabaseMode.SQLALCHEMY:
+            self.switch_to_sqlalchemy()
+        elif mode == DatabaseMode.SUPABASE:
+            self.switch_to_supabase()
+        elif mode == DatabaseMode.DUAL:
+            self.switch_to_dual_mode()
+        else:
+            raise ValueError(f"Invalid database mode: {mode}")
+    
     def is_sqlalchemy_mode(self) -> bool:
         """Check if in SQLAlchemy mode"""
         return self.mode == DatabaseMode.SQLALCHEMY
