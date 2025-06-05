@@ -43,6 +43,9 @@ instance/
 .env.local
 .env.*.local
 
+# Environment template (keep this)
+# .env.example
+
 # Logs
 *.log
 
